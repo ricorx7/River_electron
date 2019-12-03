@@ -16,6 +16,7 @@
     "max-line-length": [true, 80],
     "no-any": false,
     "no-submodule-imports": false,
+    //"noImplicitAny": false,
     "no-implicit-dependencies": [
       true,
       "dev",

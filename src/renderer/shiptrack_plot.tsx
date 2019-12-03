@@ -56,5 +56,7 @@ export class ShipTrackPlotDisplay extends React.Component<ShipTrackPlotDisplayPr
                      //onHover={this.handleHover}
         />
     );
+  }
 }
-}
+
+export default ShipTrackPlotDisplay;

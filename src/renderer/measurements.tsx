@@ -10,9 +10,12 @@ export class MeasurementDisplay extends React.Component<MeasurementDisplayProps>
   }
 
   render() {
-    return <div>
-                <h1>Measurements</h1> 
-                <p>{ this.props.msg }</p>
-            </div>
-    }
+    return (
+      <div>
+        <h1>Measurements</h1> 
+        <p>{ this.props.msg }</p>
+      </div>
+    )}
 }
+
+export default MeasurementDisplay;

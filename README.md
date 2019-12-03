@@ -1,3 +1,21 @@
+# Develop project
+## Start Python application
+Create a virtualenv
+```python
+source venv\bin\activate
+python backend/RiverManager.py
+```
+
+## Start Webpack development
+```
+npm dev
+```
+
+## Start Electron
+```
+npm start
+```
+
 # Electron-React-TypeScript-Webpack-Boilerplate
 Pre-configured Electron.js + React.js + TypeScript boilerplate with 
 Webpack v4 & linters config predefined.
@@ -145,8 +163,8 @@ http://aka.ms/vcpython27
 
 pip install gevent pyzmq zerorpc
 
-# update all the packages
+# Install zerorpc
 npm update
-
 npm install zerorpc
 
+Electron must be version 4.2.12 or less to work with zerorpc

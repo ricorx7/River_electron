@@ -110,3 +110,5 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
             </div>
     }
 }
+
+export default TabularDisplay;

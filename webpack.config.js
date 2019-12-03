@@ -80,4 +80,15 @@ rendererConfig.plugins = [
   }),
 ];
 
-module.exports = [mainConfig, rendererConfig];
+
+const adcpTerminalConfig = lodash.cloneDeep(commonConfig);
+adcpTerminalConfig.entry = './src/renderer/adcp_terminal.tsx';
+adcpTerminalConfig.target = 'electron-renderer';
+adcpTerminalConfig.output.filename = 'adcp_terminal.bundle.js';
+adcpTerminalConfig.plugins = [
+  new HtmlWebpackPlugin({
+    template: path.resolve(__dirname, './public/adcp_terminal.html'),
+  }),
+];
+
+module.exports = [mainConfig, rendererConfig, adcpTerminalConfig];

@@ -7,6 +7,7 @@ import * as url from 'url';
 import { func } from 'prop-types';
 
 let mainWindow: Electron.BrowserWindow | null;
+let adcpTerminalWindow: Electron.BrowserWindow | null;
 
 function createWindow(): void {
     // Create the browser window.
@@ -18,23 +19,20 @@ function createWindow(): void {
             devTools: process.env.NODE_ENV === 'production' ? false : true,
             //enableRemoteModule: true,
             nodeIntegration: true,
+            nativeWindowOpen: true
         }
     });
 
-
-  // and load the index.html of the app.
-  //mainWindow.loadFile('index.html')
-
-  
-    // and load the index.html of the app.
+    // Load the index.html of the app.
     mainWindow.loadURL(
         url.format({
-            pathname: path.join(__dirname, './index.html'),
+            pathname: path.join(__dirname, './index.html?viewA'),
             protocol: 'file:',
             slashes: true
         })
     );
 
+    // Display devtools in the app
     mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
@@ -43,6 +41,26 @@ function createWindow(): void {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         mainWindow = null
+    })
+}
+
+// Create the ADCP Terminal Window
+function createAdcpTerminalWindow(): void {
+    // ADCP Terminal Window
+    adcpTerminalWindow = new BrowserWindow({
+        height: 300,
+        width: 300,
+        show: false
+    });
+    adcpTerminalWindow.loadURL(
+        url.format({
+            pathname: path.join(__dirname, './index.html?viewAdcpTerm'),
+            protocol: 'file:',
+            slashes: true
+        })
+    );
+    adcpTerminalWindow.on('close', () => {
+        adcpTerminalWindow = null;
     })
 }
 
@@ -65,6 +83,22 @@ app.on('activate', () => {
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) {
         createWindow();
+    }
+});
+
+
+// Open the ADCP Terminal Window when message received
+ipcMain.on('show-adcp-terminal', function () {
+    // Create the window if it does not exist
+    if(adcpTerminalWindow == null)
+    {
+        createAdcpTerminalWindow();
+    }
+
+    // Open the window
+    if(adcpTerminalWindow != null)
+    {
+        adcpTerminalWindow.show()
     }
 });
 

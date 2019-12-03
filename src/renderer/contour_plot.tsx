@@ -24,10 +24,12 @@ export class ContourPlotDisplay extends React.Component<ContourPlotDisplayProps>
       ];
     return (
         <PlotlyChart data={data}
-                     //layout={layout}
-                     //onClick={this.handleClick}
-                     //onHover={this.handleHover}
+                      //layout={layout}
+                      //onClick={this.handleClick}
+                      //onHover={this.handleHover}
         />
     );
+  }
 }
-}
+
+export default ContourPlotDisplay;
