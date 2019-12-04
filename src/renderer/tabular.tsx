@@ -17,6 +17,7 @@ type TabularDisplayState = {
   ensNum: string;                       // Ensemble Number
   ensDateTimeStr: string;               // Ensemble DateTime string
   ensDateTime: Date;                    // Ensemble DateTime object
+  stopThread: Boolean;                  // Flag to stop the timer
 }
 
 /**
@@ -52,6 +53,7 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
         ensNum: "",
         ensDateTimeStr: "",
         ensDateTime: new Date(),
+        stopThread: false,
       }
     );
 
@@ -78,6 +80,12 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
     setInterval(function() {
             // Callback function for the zerorpc to talk to the python backend
             client.invoke("ensemble_info", 0, function(error: string, ens_info: IEnsembleData, more: string) {
+              
+              // Check if we need to stop the thread
+              if(parent.state.stopThread) {
+                client.disconnect();
+                return;
+              }
 
               // Check for any errors
               if(error) {
@@ -96,6 +104,14 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
           });  
     }, 
     250);    // Interval Time
+  }
+
+  componentWillUnmount() {
+    
+    // Stop the interval timer thread
+    this.setState({
+      stopThread: true
+    })
   }
 
   render() {

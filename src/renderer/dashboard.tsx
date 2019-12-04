@@ -9,6 +9,7 @@ import IntensityPlotDisplay from './intensity_plot'
 import ContourPlotDisplay from './contour_plot'
 import ShipTrackPlotDisplay from './shiptrack_plot'
 import { Container, Row, Col } from 'reactstrap'
+import { Link } from 'react-router-dom'
 
 // Import the styles here to process them with webpack
 import '@public/style.css';
@@ -23,7 +24,7 @@ export class Dashboard extends React.Component<DashboardProps> {
       msg: 'Hello everyone!'
     }
 
-    componentWillMount() {
+    componentDidMount() {
         // Select a file or folder
         const {ipcRenderer} = require('electron')
 
@@ -54,7 +55,17 @@ export class Dashboard extends React.Component<DashboardProps> {
 
     public render() {
         return (
-            <div className='app'>
+            <div>
+                <header>
+                <p>React Router v4 Browser Example</p>
+                    <nav>
+                    <ul>
+                        <li><Link to='/'>Home</Link></li>
+                        <li><Link to='/adcp-terminal'>Terminal</Link></li>
+                    </ul>
+                    </nav>
+                </header>
+
                 <h4>Welcome to React, Electron and Typescript</h4>
                 <p>Hello</p>
 
@@ -66,29 +77,27 @@ export class Dashboard extends React.Component<DashboardProps> {
                 <Container>
                     <Row>
                         <Col>
-                        <MeasurementDisplay msg="11/12/2018" />
+                            <MeasurementDisplay msg="11/12/2018" />
                         </Col>
                         <Col>
-                        <IntensityPlotDisplay msg="plot" />
+                            <IntensityPlotDisplay msg="plot" />
                         </Col>
                         <Col>
-                        <ShipTrackPlotDisplay />
+                            <ShipTrackPlotDisplay />
                         </Col>
                         <Col>
-                        <TabularDisplay zerorcpPort={4242} />
+                            <TabularDisplay zerorcpPort={4242} />
                         </Col>
                     </Row>
                     <Row>
                         <Col>
-                        <ContourPlotDisplay />
+                            <ContourPlotDisplay />
                         </Col>
                     </Row>
                 </Container>
-
-
             </div>
-        )
-    };
+        );
+    }
 }
 
 export default Dashboard;

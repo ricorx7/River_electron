@@ -23,9 +23,10 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps> {
 
     public render() {
         return(
-            <div>
+            <div className='term'>
                 <h4>ADCP Terminal</h4>
                 <p>Hello</p>
+                <p>{ this.props.comm }</p>
             
             
                 <Container>

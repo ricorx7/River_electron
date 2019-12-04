@@ -26,7 +26,7 @@ function createWindow(): void {
     // Load the index.html of the app.
     mainWindow.loadURL(
         url.format({
-            pathname: path.join(__dirname, './index.html?viewA'),
+            pathname: path.join(__dirname, './index.html'),
             protocol: 'file:',
             slashes: true
         })
@@ -54,8 +54,9 @@ function createAdcpTerminalWindow(): void {
     });
     adcpTerminalWindow.loadURL(
         url.format({
-            pathname: path.join(__dirname, './index.html?viewAdcpTerm'),
-            protocol: 'file:',
+            //pathname: path.join(__dirname, './adcp_terminal'),
+            //protocol: 'file:',
+            pathname: '/adcp_terminal',
             slashes: true
         })
     );
@@ -106,6 +107,17 @@ ipcMain.on('show-adcp-terminal', function () {
 // code. You can also put them in separate files and require them here.
 
 // Open File dialog called by
+ipcMain.on('open-file-dialog', (event: Electron.Event) => {
+    dialog.showOpenDialog({
+      properties: ['openFile', 'multiSelections']
+    }, (files) => {
+      if (files) {
+        event.sender.send('selected-directory', files)
+      }
+    })
+  })
+
+// Open File dialog called by
 //ipcMain.on('open-file-dialog', (event: Electron.Event) => {
 //    if(mainWindow != null)
 //    {
@@ -117,4 +129,5 @@ ipcMain.on('show-adcp-terminal', function () {
 //        }
 //        })
 //    }
-//  })
+//})
+
