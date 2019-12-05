@@ -3,11 +3,7 @@
  */
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Container, Row, Col } from 'reactstrap'
-
-// Import the styles here to process them with webpack
-import '@public/style.css';
-import '@public/bootstrap/css/bootstrap.min.css';
+import Grid from '@material-ui/core/Grid';
 
 
 type AdcpTerminalProps = {
@@ -29,9 +25,9 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps> {
                 <p>{ this.props.comm }</p>
             
             
-                <Container>
+                <Grid container spacing={3}>
                     <h4>MY ADCP TERMINAL</h4>
-                </Container>
+                </Grid>
             </div>
         );
     }

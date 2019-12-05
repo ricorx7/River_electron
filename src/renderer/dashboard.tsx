@@ -2,102 +2,91 @@
  * React renderer.
  */
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import TabularDisplay from './tabular'
 import MeasurementDisplay from './measurements'
 import IntensityPlotDisplay from './intensity_plot'
 import ContourPlotDisplay from './contour_plot'
 import ShipTrackPlotDisplay from './shiptrack_plot'
-import { Container, Row, Col } from 'reactstrap'
-import { Link } from 'react-router-dom'
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 
-// Import the styles here to process them with webpack
-import '@public/style.css';
-import '@public/bootstrap/css/bootstrap.min.css';
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      flexGrow: 1,
+    },
+    paper: {
+      padding: theme.spacing(2),
+      textAlign: 'center',
+      color: theme.palette.text.secondary,
+    },
+  }),
+);
 
-type DashboardProps = {
-    msg: string
-  }
+const Dashboard = () => {
 
-export class Dashboard extends React.Component<DashboardProps> {
-    static defaultProps = {
-      msg: 'Hello everyone!'
-    }
+    /**
+     * Get the style
+     */
+    const classes = useStyles();
 
-    componentDidMount() {
-        // Select a file or folder
-        const {ipcRenderer} = require('electron')
+    const {ipcRenderer} = require('electron');
 
-        const selectDirBtn = document.getElementById('select-directory')
-
-        if(selectDirBtn != null) {
-            selectDirBtn.addEventListener('click', (event) => {
-                ipcRenderer.send('open-file-dialog')
-            })
-        }
-
+    /**
+     * Initialize at startup
+     */
+    React.useEffect(() => {
         const selectedFile = document.getElementById('selected-file')
         if(selectedFile !=  null) {
             ipcRenderer.on('selected-directory', (event: Electron.Event, path: string) => {
                 selectedFile.innerHTML = `You selected: ${path}`
             })
         }
+    });
 
-        // Show ADCP Terminal Button handling
-        const showAdcpTerminalBtn = document.getElementById('show-adcp-terminal')
-
-        if(showAdcpTerminalBtn != null) {
-            showAdcpTerminalBtn.addEventListener('click', (event) => {
-                ipcRenderer.send('show-adcp-terminal')
-            })
-        }
+    /**
+     * Button Click to Open the file dialog
+     */
+    const handleSelectFileClick = () => {
+        ipcRenderer.send('open-file-dialog');
     }
 
-    public render() {
-        return (
-            <div>
-                <header>
-                <p>React Router v4 Browser Example</p>
-                    <nav>
-                    <ul>
-                        <li><Link to='/'>Home</Link></li>
-                        <li><Link to='/adcp-terminal'>Terminal</Link></li>
-                    </ul>
-                    </nav>
-                </header>
+    /**
+     * Button Click to show terminal.
+     */
+    const handleShowAdcpTerminal = () => {
+        ipcRenderer.send('show-adcp-terminal');
+    }
 
-                <h4>Welcome to React, Electron and Typescript</h4>
-                <p>Hello</p>
+    return (
+            <div className={classes.root}>
 
-                <button id='select-directory'>Select File</button>
+                <Button id='select-directory' onClick={handleSelectFileClick}>Select File</Button>
                 <span id='selected-file'></span>
 
-                <button id='show-adcp-terminal'>Open ADCP Terminal</button>
+                <Button id='show-adcp-terminal' onClick={handleShowAdcpTerminal}>Open ADCP Terminal</Button>
 
-                <Container>
-                    <Row>
-                        <Col>
-                            <MeasurementDisplay msg="11/12/2018" />
-                        </Col>
-                        <Col>
-                            <IntensityPlotDisplay msg="plot" />
-                        </Col>
-                        <Col>
-                            <ShipTrackPlotDisplay />
-                        </Col>
-                        <Col>
-                            <TabularDisplay zerorcpPort={4242} />
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <ContourPlotDisplay />
-                        </Col>
-                    </Row>
-                </Container>
+                <Grid container spacing={2}>
+                    <Grid item xs={6} sm={3}>
+                        <MeasurementDisplay msg="11/12/2018" />
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <IntensityPlotDisplay msg="plot" />
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <ShipTrackPlotDisplay />
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <TabularDisplay zerorcpPort={4242} />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <ContourPlotDisplay />
+                    </Grid>
+                </Grid>
             </div>
         );
     }
-}
 
 export default Dashboard;
