@@ -24,6 +24,7 @@ import PanoramaIcon from '@material-ui/icons/Panorama';
 import TimelineIcon from '@material-ui/icons/Timeline';
 import DirectionsBoatIcon from '@material-ui/icons/DirectionsBoat';
 import SettingsIcon from '@material-ui/icons/Settings';
+import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
 import Dashboard from './dashboard';
 import AdcpTerminalView from './adcp_terminal';
 import TabularDisplay from './tabular'
@@ -183,6 +184,13 @@ export default function MiniDrawer() {
               <SettingsInputHdmiIcon />
             </ListItemIcon>
             <ListItemText primary="ADCP Terminal" />
+          </ListItemLink>
+
+          <ListItemLink href="#adcp-terminal">
+            <ListItemIcon>
+              <SubscriptionsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Playback" />
           </ListItemLink>
 
         </List>
