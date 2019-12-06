@@ -28,6 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "@material-ui/core": "^4.7.1",
+    "@material-ui/icons": "^4.5.1",
     "@trendmicro/react-sidenav": "^0.4.5",
     "@types/node": "^12.12.14",
     "@types/react": "^16.9.13",
@@ -45,6 +46,7 @@
     "react-sidenav": "^4.0.6",
     "rebuild": "^0.1.2",
     "styled-components": "^4.4.1",
+    "typeface-roboto": "0.0.75",
     "zerorpc": "fyears/zerorpc-node"
   },
   "devDependencies": {

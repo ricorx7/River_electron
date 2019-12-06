@@ -56,8 +56,8 @@ function createAdcpTerminalWindow(): void {
         url.format({
             //pathname: path.join(__dirname, './adcp_terminal'),
             //protocol: 'file:',
-            pathname: '/adcp_terminal',
-            slashes: true
+            pathname: '#adcp-terminal',
+            //slashes: true
         })
     );
     adcpTerminalWindow.on('close', () => {
