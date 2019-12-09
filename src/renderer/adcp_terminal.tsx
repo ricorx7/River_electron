@@ -52,6 +52,8 @@ const AdcpTerminalView = () => {
     client.connect(zerorpcIP);
 
      const interval = setInterval(() => {
+        console.log("adcp_terminal_display")
+        /** 
         // Callback function for the zerorpc to talk to the python backend
         client.invoke("terminal_data", 0, function(error: string, incomingTermData: string, more: string) {
           
@@ -69,7 +71,8 @@ const AdcpTerminalView = () => {
             // Set the state of the values
             setTermData(incomingTermData);
           }
-          });  
+          */
+         //});  
         }, 250);    // Interval Time
     });
 

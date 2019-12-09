@@ -73,7 +73,7 @@ const Dashboard = () => {
                         <MeasurementDisplay msg="11/12/2018" />
                     </Grid>
                     <Grid item xs={6} sm={3}>
-                        <IntensityPlotDisplay msg="plot" />
+                        <IntensityPlotDisplay zerorcpPort={4241} updateRate={250} />
                     </Grid>
                     <Grid item xs={6} sm={3}>
                         <ShipTrackPlotDisplay />

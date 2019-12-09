@@ -105,6 +105,8 @@ export default function MiniDrawer() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
+  const {ipcRenderer} = require('electron');
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -115,6 +117,13 @@ export default function MiniDrawer() {
 
   function ListItemLink(props: ListItemProps<'a', { button?: true }>) {
     return <ListItem button component="a" {...props} />;
+  }
+
+    /**
+     * Button Click to Open the file dialog
+     */
+    const handleSelectFileClick = () => {
+      ipcRenderer.send('open-file-dialog');
   }
 
   return (
@@ -186,7 +195,7 @@ export default function MiniDrawer() {
             <ListItemText primary="ADCP Terminal" />
           </ListItemLink>
 
-          <ListItemLink href="#adcp-terminal">
+          <ListItemLink onClick={handleSelectFileClick}>
             <ListItemIcon>
               <SubscriptionsIcon />
             </ListItemIcon>

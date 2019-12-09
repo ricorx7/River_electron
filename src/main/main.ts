@@ -5,6 +5,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import { func } from 'prop-types';
+var zerorpc = require('zerorpc');
 
 let mainWindow: Electron.BrowserWindow | null;
 let adcpTerminalWindow: Electron.BrowserWindow | null;
@@ -106,13 +107,27 @@ ipcMain.on('show-adcp-terminal', function () {
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
+
+// Create the zerorpc connection to the python server
+// Use the port given to create the port
+var client = new zerorpc.Client();
+var zerorpcIP = "tcp://127.0.0.1:4241";
+client.connect(zerorpcIP);
+
 // Open File dialog called by
 ipcMain.on('open-file-dialog', (event: Electron.Event) => {
     dialog.showOpenDialog({
       properties: ['openFile', 'multiSelections']
     }, (files) => {
       if (files) {
+        // Send ther responds back to the VM on the files selected
         event.sender.send('selected-directory', files)
+
+        // Call to python to playback the selected files
+        client.invoke("zerorpc_playback_files", files, function(error: string, playback_status: string, more: string) {
+            console.log(playback_status)
+        });
+
       }
     })
   })

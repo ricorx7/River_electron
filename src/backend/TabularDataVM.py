@@ -1,6 +1,7 @@
 import zerorpc
 import datetime
 import logging
+from rti_python.Ensemble.Ensemble import Ensemble
 
 
 class TabularDataVM(object):
@@ -15,6 +16,10 @@ class TabularDataVM(object):
         Initialize the values.
         """
         self.ens_num = 0
+        self.latest_ens = None
+
+    def set_ens(self, ens: Ensemble):
+        self.latest_ens = ens
 
     def ensemble_info(self, subsystem: int):
         """
@@ -26,16 +31,17 @@ class TabularDataVM(object):
         :param subsystem:  Currently not used, just use 0 for now.
         :return: Ensemble data as a dictionary.
         """
-        self.ens_num += 1
+        if self.latest_ens:
+            # Create a dictonary with all the ensemble data
+            ens_info = {
+                "ensembleNum": self.latest_ens.EnsembleData.EnsembleNumber,
+                "ensembleDateTimeStr": self.latest_ens.EnsembleData.datetime().isoformat()
+            }
 
-        # Create a dictonary with all the ensemble data
-        ens_info = {
-            "ensembleNum": self.ens_num,
-            "ensembleDateTimeStr": datetime.datetime.now().isoformat()
-        }
-
-        logging.info("Ensemble Info Request: " + str(self.ens_num))
-        return ens_info
+            logging.info("Tabular Ensemble Info Request: " + str(self.ens_num))
+            return ens_info
+        else:
+            return None
 
     def run_server(self, port: int = 4242):
         """
