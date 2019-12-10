@@ -14,14 +14,8 @@ class RiverManager:
         """
         Initialize the threads for the ViewModels and ADCP
         """
-        # Start the TabularData
-        self.tabular = TabularDataVM()
-        self.tabular_thread = Thread(target=self.tabular.run_server, args=(4242,), name="TabularVM Thread")
-        self.tabular_thread.start()
-        logging.info("Tabular Thread started")
-
         # Start the Playback
-        self.data_mgr = DataManager(self.tabular)
+        self.data_mgr = DataManager()
         self.data_mgr_thread = Thread(target=self.data_mgr.start, args=(4241,), name="DataManager Thread")
         self.data_mgr_thread.start()
         logging.info("Data Thread started")

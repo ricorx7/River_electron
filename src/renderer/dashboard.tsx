@@ -79,7 +79,7 @@ const Dashboard = () => {
                         <ShipTrackPlotDisplay />
                     </Grid>
                     <Grid item xs={6} sm={3}>
-                        <TabularDisplay zerorcpPort={4242} />
+                        <TabularDisplay zerorcpPort={4241} updateRate={250} />
                     </Grid>
                     <Grid item xs={12}>
                         <ContourPlotDisplay />

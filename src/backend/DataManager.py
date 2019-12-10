@@ -8,12 +8,16 @@ from rti_python.Ensemble.EnsembleData import Ensemble
 from rti_python.Utilities.qa_qc import EnsembleQC
 from PlaybackManager import PlaybackManager
 from AmplitudeVM import AmplitudeVM
+from ContourVM import ContourVM
+from TabularDataVM import TabularDataVM
+
 
 class DataManager:
 
-    def __init__(self, tabular_vm):
-        self.tabular_vm = tabular_vm
+    def __init__(self):
+        self.tabular_vm = TabularDataVM()
         self.amp_vm = AmplitudeVM()
+        self.contour_vm = ContourVM()
 
         # Ensemble processing thread
         self.ens_thread_alive = True
@@ -21,8 +25,10 @@ class DataManager:
         self.ens_thread_event = Event()
         self.ens_thread = Thread(name="DataManager", target=self.ens_thread_run)
 
-        self.test_value = 1
-        self.test_val_inc = 0.01
+        # Used to remove vessel speed
+        self.prev_bt_east = Ensemble.BadVelocity
+        self.prev_bt_north = Ensemble.BadVelocity
+        self.prev_bt_vert = Ensemble.BadVelocity
 
     def start(self, zerorpc_port: int):
         """
@@ -61,10 +67,25 @@ class DataManager:
         if files:
             logging.info("Loading files: " + str(files))
 
+            # Reset the plot when playback is called again
+            if self.contour_vm:
+                self.contour_vm.reset()
+            if self.tabular_vm:
+                self.tabular_vm.reset()
+
             # Run a thread to playback the file
             playback_mgr = PlaybackManager(self)
             thread = Thread(name="AdcpDataManager Playback Thread", target=playback_mgr.playback_thread, args=(files,))
             thread.start()
+
+    def zerorpc_tabular_data(self, subsystem: int):
+        """
+        Get the latest amplitude data.
+        :param subsystem: Subsystem number.
+        :return:
+        """
+        logging.info("Tabular Data Request")
+        return self.tabular_vm.get_data()
 
     def zerorpc_amp_plot(self, subsystem: int):
         """
@@ -74,6 +95,20 @@ class DataManager:
         """
         logging.info("Amp Data Request")
         return self.amp_vm.get_data()
+
+    def zerorpc_contour_plot(self, contour_type: str):
+        """
+        Get the latest amplitude data.
+        Contour Types:
+        mag, dir
+        beam0, beam1, beam2, beam3
+        amp, ampBeam0, ampBeam1, ampBeam2, ampBeam3, ampVert
+        corr
+        :param contour_type: Contour type.
+        :return:
+        """
+        logging.info("Contour Data Request")
+        return self.contour_vm.get_data("mag")
 
     def shutdown(self):
         """
@@ -115,11 +150,16 @@ class DataManager:
                     if ens.IsEnsembleData:
                         logging.info("AdcpDataManager: Process Ensemble: " + str(ens.EnsembleData.EnsembleNumber))
 
+                        # Screen Data
+
                         # Pass Data to Tabular data
                         self.tabular_vm.set_ens(ens)
 
                         # Pass data to Amplitude plot VM
                         self.amp_vm.set_ens(ens)
+
+                        # Pass data to Contour plot VM
+                        self.contour_vm.set_ens(ens)
 
             # Reset the event
             self.ens_thread_event.clear()

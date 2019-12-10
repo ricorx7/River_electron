@@ -7,6 +7,7 @@ var zerorpc = require('zerorpc');
  */
 type TabularDisplayProps = {
   zerorcpPort: Number;                  // zerorpc Port
+  updateRate: Number
 }
 
 /**
@@ -17,6 +18,32 @@ type TabularDisplayState = {
   ensDateTimeStr: string;               // Ensemble DateTime string
   ensDateTime: Date;                    // Ensemble DateTime object
   stopThread: Boolean;                  // Flag to stop the timer
+  numEnsembles: Number;
+  lostEnsembles: Number;
+  badEnsembles: Number;
+  percentBadBins: Number;
+  deltaTime: Number;
+  pitch: Number;
+  roll: Number;
+  heading: Number;
+  temperature: Number;
+  pressure: Number;
+  goodBins: Number;
+  topQ: Number;
+  measuredQ: Number;
+  bottomQ: Number;
+  leftQ: Number;
+  rightQ: Number;
+  totalQ: Number;
+  boatSpeed: Number;
+  boatCourse: Number;
+  waterSpeed: Number;
+  waterDir: Number;
+  calcDepth: Number;
+  riverLength: Number;
+  distanceMadeGood: Number;
+  courseMadeGood: Number;
+  duration: Number;
 }
 
 /**
@@ -28,11 +55,38 @@ type TabularDisplayState = {
 interface IEnsembleData {
   ensembleNum: Number;
   ensembleDateTimeStr: string;
+  numEnsembles: Number;
+  lostEnsembles: Number;
+  badEnsembles: Number;
+  percentBadBins: Number;
+  deltaTime: Number;
+  pitch: Number;
+  roll: Number;
+  heading: Number;
+  temperature: Number;
+  pressure: Number;
+  goodBins: Number;
+  topQ: Number;
+  measuredQ: Number;
+  bottomQ: Number;
+  leftQ: Number;
+  rightQ: Number;
+  totalQ: Number;
+  boatSpeed: Number;
+  boatCourse: Number;
+  waterSpeed: Number;
+  waterDir: Number;
+  calcDepth: Number;
+  riverLength: Number;
+  distanceMadeGood: Number;
+  courseMadeGood: Number;
+  duration: Number;
 }
 
 export class TabularDisplay extends React.Component<TabularDisplayProps, TabularDisplayState> {
   static defaultProps = {
-    zerorcpPort: 4242                     // Default zerorpc Port
+    zerorcpPort: 4241,                     // Default zerorpc Port
+    updateRate: 250
   }
 
   /**
@@ -65,6 +119,8 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
     // Created so the callback function can use parent to set state
     var parent = this;
 
+    console.log("Create Tabular");
+
     /** 
      * Update the display with the latest information.
      * This will call to the zerorpc for the latest data.
@@ -78,7 +134,7 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
      */
     setInterval(function() {
             // Callback function for the zerorpc to talk to the python backend
-            client.invoke("ensemble_info", 0, function(error: string, ens_info: IEnsembleData, more: string) {
+            client.invoke("zerorpc_tabular_data", 0, function(error: string, ens_info: IEnsembleData, more: string) {
               
               // Check if we need to stop the thread
               if(parent.state.stopThread) {
@@ -97,12 +153,17 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
                 parent.setState({
                   ensNum: ens_info.ensembleNum.toString(),
                   ensDateTimeStr: ens_info.ensembleDateTimeStr,
-                  ensDateTime: new Date(ens_info.ensembleDateTimeStr)
+                  ensDateTime: new Date(ens_info.ensembleDateTimeStr),
+                  heading: ens_info.heading,
+                  pitch: ens_info.pitch,
+                  roll: ens_info.roll,
+                  temperature: ens_info.temperature,
+                  pressure: ens_info.pressure,
               });
             }
           });  
     }, 
-    250);    // Interval Time
+    this.props.updateRate);    // Interval Time
   }
 
   componentWillUnmount() {
@@ -117,10 +178,14 @@ export class TabularDisplay extends React.Component<TabularDisplayProps, Tabular
     return <div>
                 <h1>Tabular Data</h1> 
                 <p>Ensemble Number: { this.state.ensNum }</p>
-                <p>Ensemble Number: { this.state.ensDateTimeStr }</p>
+                <p>{ this.state.ensDateTimeStr }</p>
                 <p>Ensemble Year: { this.state.ensDateTime.getFullYear().toString() }</p>
                 <p>Ensemble Seconds: { this.state.ensDateTime.getSeconds().toString() }</p>
                 <p>Ensemble Milliseconds: { this.state.ensDateTime.getMilliseconds().toString() }</p>
+                <p>Heading: { this.state.heading }</p>
+                <p>Pitch: { this.state.pitch }</p>
+                <p>Roll: { this.state.roll }</p>
+                <p>Temperature: { this.state.temperature }</p>
                 <p>{ this.props.zerorcpPort }</p>
             </div>
     }

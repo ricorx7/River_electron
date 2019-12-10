@@ -26,6 +26,7 @@ type IntensityPlotState = {
     isUpward: boolean;                            // Flag if the data is upward or downward
     data: Plotly.Data[]                           // Data to display
     layout: Partial<Plotly.Layout>;               // Layout of the plot
+    config: {};                                   // Configuration of plot (Plotly.Config)
   }
 
 /**
@@ -75,9 +76,9 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
         numBins: 0,
         minBinDepth: 0,
         maxBinDepth: 0,
-        binData: [1, 2, 3, 4],
-        beam0Data: [10, 15, 13, 17],
-        beam1Data: [16, 5, 11, 9],
+        binData: [],
+        beam0Data: [],
+        beam1Data: [],
         stopThread: false,
         layout: {},
       }
@@ -91,6 +92,24 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
     
     // Created so the callback function can use parent to set state
     var parent = this;
+
+    //  Modebar Buttons names at https://github.com/plotly/plotly.js/blob/master/src/components/modebar/buttons.js
+     //  - sendDataToCloud 
+     //  - (2D): zoom2d, pan2d, select2d, lasso2d, zoomIn2d, zoomOut2d, autoScale2d, resetScale2d
+     //  - (Cartesian): hoverClosestCartesian, hoverCompareCartesian 
+     //  - (3D): zoom3d, pan3d, orbitRotation, tableRotation, handleDrag3d, resetCameraDefault3d, resetCameraLastSave3d, hoverClosest3d
+     //  - (Geo): zoomInGeo, zoomOutGeo, resetGeo, hoverClosestGeo
+     //  - hoverClosestGl2d, hoverClosestPie, toggleHover, resetViews 
+     var defaultPlotlyConfiguration = {
+        //modeBarButtonsToRemove: ['sendDataToCloud', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian', 'lasso2d', 'select2d'], 
+        displaylogo: false,         // Remove the "Produce by Plotly button"
+        doubleClick: "autosize" 
+        //showTips: true as const, 
+      };
+  
+      this.setState({
+        config: defaultPlotlyConfiguration,
+      });
 
     /** 
      * Update the display with the latest information.
@@ -178,7 +197,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                         parent.state.numBins != amp_data.numBins ||
                         parent.state.numBeams != amp_data.numBeams)
                     {
-                        console.log("Create Console Layout");
+                        console.log("Create Instensity Plot Layout");
                         // Set the layout of the plot
                         // This sets the axis and 
                         var layout = {
@@ -259,6 +278,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
         return (
             <PlotlyChart data={this.state.data}
                             layout={this.state.layout}
+                            config={this.state.config}
                             //onClick={this.handleClick}
                             //onHover={this.handleHover}
             />

@@ -1,4 +1,5 @@
 from threading import Lock
+import logging
 from rti_python.Ensemble.Ensemble import Ensemble
 
 
@@ -128,6 +129,6 @@ class AmplitudeVM:
         # Release the lock
         self.thread_lock.release()
 
-        print(amp_data)
+        logging.debug(amp_data)
 
         return amp_data
