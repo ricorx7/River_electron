@@ -53,8 +53,8 @@ class ContourVM:
                 self.magData.append([])                             # Create an array for each bin
 
             # Get Min and max bin depth
-            self.MinBinDepth = ens.AncillaryData.FirstBinRange
-            self.MaxBinDepth = ens.AncillaryData.FirstBinRange + (ens.AncillaryData.BinSize * ens.EnsembleData.NumBins)
+            self.MinBinDepth = Ensemble.get_bin_depth(ens.AncillaryData.FirstBinRange, ens.AncillaryData.BinSize, 0)
+            self.MaxBinDepth = Ensemble.get_bin_depth(ens.AncillaryData.FirstBinRange, ens.AncillaryData.BinSize, ens.EnsembleData.NumBins)
 
         # Populate the velocity data and date and time
         if ens.IsEarthVelocity:

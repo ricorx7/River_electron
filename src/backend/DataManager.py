@@ -10,6 +10,7 @@ from PlaybackManager import PlaybackManager
 from AmplitudeVM import AmplitudeVM
 from ContourVM import ContourVM
 from TabularDataVM import TabularDataVM
+from ShipTrackVM import ShipTrackVM
 
 
 class DataManager:
@@ -18,6 +19,7 @@ class DataManager:
         self.tabular_vm = TabularDataVM()
         self.amp_vm = AmplitudeVM()
         self.contour_vm = ContourVM()
+        self.shiptrack_vm = ShipTrackVM()
 
         # Ensemble processing thread
         self.ens_thread_alive = True
@@ -72,6 +74,8 @@ class DataManager:
                 self.contour_vm.reset()
             if self.tabular_vm:
                 self.tabular_vm.reset()
+            if self.shiptrack_vm:
+                self.shiptrack_vm.reset()
 
             # Run a thread to playback the file
             playback_mgr = PlaybackManager(self)
@@ -95,6 +99,15 @@ class DataManager:
         """
         logging.info("Amp Data Request")
         return self.amp_vm.get_data()
+
+    def zerorpc_shiptrack_plot(self, subsystem: int):
+        """
+        Get the latest ship track data.
+        :param subsystem: Subsystem number.
+        :return:
+        """
+        logging.info("Ship Track Data Request")
+        return self.shiptrack_vm.get_data()
 
     def zerorpc_contour_plot(self, contour_type: str):
         """
@@ -160,6 +173,9 @@ class DataManager:
 
                         # Pass data to Contour plot VM
                         self.contour_vm.set_ens(ens)
+
+                        # Pass data to Ship Track plot VM
+                        self.shiptrack_vm.set_ens(ens)
 
             # Reset the event
             self.ens_thread_event.clear()

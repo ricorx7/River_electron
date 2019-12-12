@@ -64,8 +64,8 @@ class AmplitudeVM:
                 self.Beam3Data.append(0)
 
         # Get Min and max bin depth
-        self.MinBinDepth = ens.AncillaryData.FirstBinRange
-        self.MaxBinDepth = ens.AncillaryData.FirstBinRange + (ens.AncillaryData.BinSize * ens.EnsembleData.NumBins)
+        self.MinBinDepth = Ensemble.get_bin_depth(ens.AncillaryData.FirstBinRange, ens.AncillaryData.BinSize, 0)
+        self.MaxBinDepth = Ensemble.get_bin_depth(ens.AncillaryData.FirstBinRange, ens.AncillaryData.BinSize, ens.EnsembleData.NumBins)
 
         # Set Data
         for bin_num in range(ens.EnsembleData.NumBins):
