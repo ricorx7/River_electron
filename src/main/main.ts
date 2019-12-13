@@ -54,12 +54,16 @@ function createAdcpTerminalWindow(): void {
         show: false
     });
     adcpTerminalWindow.loadURL(
-        url.format({
-            //pathname: path.join(__dirname, './adcp_terminal'),
-            //protocol: 'file:',
-            pathname: '#adcp-terminal',
-            //slashes: true
-        })
+        //url.format({
+        //    //pathname: path.join(__dirname, './adcp_terminal'),
+        //    //protocol: 'file:',
+        //    pathname: '#adcp-terminal',
+        //    //slashes: true
+        //})
+        //'http://localhost:3000/adcp_terminal'
+        `file://${path.join(__dirname, 'index.html#/adcp_terminal')}`
+        //'#adcp-terminal'
+
     );
     adcpTerminalWindow.on('close', () => {
         adcpTerminalWindow = null;

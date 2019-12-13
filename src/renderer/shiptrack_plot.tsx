@@ -2,7 +2,9 @@ import * as React from "react";
 import PlotlyChart from 'react-plotlyjs-ts';
 import * as Plotly from 'plotly.js'
 import { any } from "prop-types";
+//import { mergeClasses } from "@material-ui/styles";
 var zerorpc = require('zerorpc');
+
 
 type IntensityPlotDisplayProps = {
     zerorcpPort: Number,
@@ -17,6 +19,7 @@ type IntensityPlotState = {
     data: Plotly.Data[]                           // Data to display
     layout: Partial<Plotly.Layout>;               // Layout of the plot
     config: {};                                   // Configuration of plot (Plotly.Config)
+    classes: any;
   }
 
 /**
@@ -26,7 +29,12 @@ type IntensityPlotState = {
  * server dictionary.
  */
 interface IShipTrackPlotData {
-    data: any;                       //  Plot points
+    quiver_x: [];                       //  Quiver X points
+    quiver_y: [];                       //  Quiver Y points
+    lat: [];                            //  Lat
+    lon: [];                            //  Lon
+    last_lat: 0.0;                      // Last Latitude
+    last_lon: 0.0;                      // Last Longitude
   }
 
 export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayProps, IntensityPlotState> {
@@ -34,6 +42,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
         zerorcpPort: 4241,
         updateRate: 250
     }
+    
 
     public handleClick = (evt: any) => alert('click')
     public handleHover = (evt: any) => alert('hover')
@@ -64,13 +73,19 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
           title: 'Ship Track',
           yaxis: {
               title: 'latitude',
-              range: [-180, 180]
+              //range: [-180, 180]
           },
           xaxis: {
-              range: [-90, 90],
+              //range: [-90, 90],
               title: 'longitude',
           },
           uirevision: 'true',
+          legend: {
+            "orientation": "h" as const,
+            //x: 0.1, 
+            //y: 1.1,
+          },
+          
       };
       
       // Set the state with the new layout
@@ -136,8 +151,45 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                 {          
                     // Accumulate the plot data based on
                     // the number of beams
-                    var plotData = st_data.data
-                    
+                    var plotData = []
+
+                    var quiver = {
+                      x: st_data.quiver_x,
+                      y: st_data.quiver_y,
+                      type: "scatter" as const,
+                      name: "Average",
+                    };
+                    plotData.push(quiver);
+
+                    var shiptrack = {
+                      x: st_data.lon,
+                      y: st_data.lat,
+                      type: "scatter" as const,
+                      connectgaps: true,                  // NONE plots nothing, so connect
+                      name: "Ship Track",
+                    };
+                    plotData.push(shiptrack);
+
+                    var last_spot = {
+                      x: [st_data.last_lon],
+                      y: [st_data.last_lat],
+                      mode: 'markers' as const,     
+                      //name: 'North America' as const,
+                      showlegend: false,
+                      //text: [st_data.last_lon.toString() + "," + st_data.last_lat.toString()],
+                      marker: {
+                        color: 'rgb(164, 194, 244)',
+                        size: 12,
+                        line: {
+                          color: 'white',
+                          width: 0.5
+                        }
+                      },
+                      type: 'scatter' as const,
+                    }
+                    plotData.push(last_spot);
+
+
                     // Set the state for the plot data
                     parent.setState({
                         data: plotData

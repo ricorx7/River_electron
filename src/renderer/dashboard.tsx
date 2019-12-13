@@ -69,20 +69,25 @@ const Dashboard = () => {
                 <Button id='show-adcp-terminal' onClick={handleShowAdcpTerminal}>Open ADCP Terminal</Button>
 
                 <Grid container spacing={2}>
-                    <Grid item xs={6} sm={3}>
-                        <MeasurementDisplay msg="11/12/2018" />
+                    <Grid item xs={8} sm={4}>
+                        <Paper className={classes.paper}>
+                            <IntensityPlotDisplay zerorcpPort={4241} updateRate={250} />
+                        </Paper>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
-                        <IntensityPlotDisplay zerorcpPort={4241} updateRate={250} />
+                    <Grid item xs={8} sm={4}>
+                        <Paper className={classes.paper}>
+                            <ShipTrackPlotDisplay />
+                        </Paper>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
-                        <ShipTrackPlotDisplay />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                        <TabularDisplay zerorcpPort={4241} updateRate={250} />
+                    <Grid item xs={8} sm={4}>
+                        <Paper className={classes.paper}>
+                            <TabularDisplay zerorcpPort={4241} updateRate={250} />
+                        </Paper>
                     </Grid>
                     <Grid item xs={12}>
-                        <ContourPlotDisplay />
+                        <Paper className={classes.paper}>
+                            <ContourPlotDisplay />
+                        </Paper>
                     </Grid>
                 </Grid>
             </div>

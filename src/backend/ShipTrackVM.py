@@ -11,11 +11,14 @@ class ShipTrackVM:
     def __init__(self):
         self.lat = []
         self.lon = []
+        self.last_lat = 0.0
+        self.last_lon = 0.0
         self.avg_mag = []
         self.avg_dir = []
+        self.quiver_x = []                              # Longitude points
+        self.quiver_y = []                              # Latitude points
         self.quiver = []                                # Contains arrays with 2 points for quiver
-        self.fig = None                                 # Plotly figured generated for quiver plot
-        self.mag_scale = 0.1                            # Scale the magnitude line
+        self.mag_scale = 20.0                            # Scale the magnitude line
         self.thread_lock = Lock()
 
     def set_ens(self, ens: Ensemble):
@@ -39,6 +42,10 @@ class ShipTrackVM:
             self.lat.append(ens.NmeaData.latitude)
             self.lon.append(ens.NmeaData.longitude)
 
+            # Last Lat/Lon to place a marker for end of the path
+            self.last_lat = ens.NmeaData.latitude
+            self.last_lon = ens.NmeaData.longitude
+
             # Get the average velocity and direction for the ensemble
             avg_mag, avg_dir = ens.EarthVelocity.average_mag_dir()
             self.avg_mag.append(avg_mag)
@@ -46,26 +53,23 @@ class ShipTrackVM:
 
             # Create the magnitude and direction line
             # Use the given Lat/Lon position as the start point
-            #position = LatLon(ens.NmeaData.latitude,
-            #                 ens.NmeaData.longitude)
+            position = LatLon(ens.NmeaData.latitude,
+                              ens.NmeaData.longitude)
 
             # Calculate the new position, based on the current lat/lon and the avg mag and dir
             # These 2 points will create the quiver that represents the mag and dir for the given
             # latitude point
-            #avg_position = position.destination(avg_mag, avg_dir)
+            avg_position = position.destination(avg_mag * self.mag_scale, avg_dir)
 
-            if len(self.lat) > 1:
-                # Create the quiver plot to pass to the javascript
-                # Quiver plot does not exist in javascript, so generate the points here
-                self.fig = ff.create_quiver(self.lat, self.lon, self.avg_mag, self.avg_dir, self.mag_scale)
-
-                # Add the lat/lon line
-                ship_track_points = go.Scatter(x=self.lat,
-                                               y=self.lon,
-                                               mode='lines',
-                                               name='shiptrack')
-                #self.fig['data'].append(ship_track_points)
-                self.fig.add_trace(ship_track_points)
+            # Add the points to the arrays
+            # The start point is the ship track line
+            # The end point is the magnitude and angle from the start point on the ship track line
+            self.quiver_x.append(position.lon)
+            self.quiver_y.append(position.lat)
+            self.quiver_x.append(avg_position.lon)
+            self.quiver_y.append(avg_position.lat)
+            self.quiver_x.append(None)                  # Add a None to breakup the lines for each quiver
+            self.quiver_y.append(None)                  # Add a None to breakup the lines for each quiver
 
         # Release the lock
         self.thread_lock.release()
@@ -83,10 +87,15 @@ class ShipTrackVM:
         # Lock the object
         self.thread_lock.acquire()
 
-        if self.fig is not None:
+        if len(self.lat) > 0:
             # Populate the structure
             st_data = {
-                "data": self.fig['data'],
+                "quiver_x": self.quiver_x,
+                "quiver_y": self.quiver_y,
+                "lat": self.lat,
+                "lon": self.lon,
+                "last_lat": self.last_lat,
+                "last_lon": self.last_lon,
             }
         else:
             st_data = {}
@@ -107,4 +116,5 @@ class ShipTrackVM:
         self.lon.clear()
         self.avg_dir.clear()
         self.avg_mag.clear()
-        self.fig = None
+        self.last_lat = 0.0
+        self.last_lon = 0.0

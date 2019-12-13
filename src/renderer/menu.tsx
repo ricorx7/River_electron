@@ -170,16 +170,11 @@ export default function MiniDrawer() {
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
+        
         </div>
         <Divider />
-        <List>
 
-          <ListItemLink href="#">
-            <ListItemIcon>
-              <AppsIcon />
-            </ListItemIcon>
-            <ListItemText primary="Dashboard" />
-          </ListItemLink>
+        <List>
 
           <ListItemLink href="#configure">
             <ListItemIcon>
@@ -188,6 +183,11 @@ export default function MiniDrawer() {
             <ListItemText primary="Configure" />
           </ListItemLink>
 
+          </List>
+
+        <Divider />
+
+        <List>
           <ListItemLink href="#adcp-terminal">
             <ListItemIcon>
               <SettingsInputHdmiIcon />
@@ -203,7 +203,16 @@ export default function MiniDrawer() {
           </ListItemLink>
 
         </List>
+        
         <Divider />
+
+        <ListItemLink href="#">
+            <ListItemIcon>
+              <AppsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItemLink>
+
         <List>
           <ListItemLink href="#tabular">
             <ListItemIcon>

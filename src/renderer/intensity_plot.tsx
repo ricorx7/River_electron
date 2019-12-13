@@ -219,6 +219,9 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                                 title: 'dB',
                             },
                             uirevision: 'true',
+                            legend: {
+                                "orientation": "h" as const,
+                              },
                         };
 
                         // If upward, then the ADCP is on the seafloor looking upward
@@ -244,6 +247,9 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                                     title: 'dB',
                                 },
                                 uirevision: 'true',
+                                legend: {
+                                    "orientation": "h" as const,
+                                  },
                             };
                         }
                         
