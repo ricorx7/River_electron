@@ -11,15 +11,22 @@ from AmplitudeVM import AmplitudeVM
 from ContourVM import ContourVM
 from TabularDataVM import TabularDataVM
 from ShipTrackVM import ShipTrackVM
+from AdcpTerminal import AdcpTerminalVM
+from rti_python.Utilities.config import RtiConfig
 
 
 class DataManager:
 
     def __init__(self):
+
+        self.rti_config = RtiConfig()
+        self.rti_config.init_terminal_config()
+
         self.tabular_vm = TabularDataVM()
         self.amp_vm = AmplitudeVM()
         self.contour_vm = ContourVM()
         self.shiptrack_vm = ShipTrackVM()
+        self.adcp_terminal = AdcpTerminalVM(self.rti_config)
 
         # Ensemble processing thread
         self.ens_thread_alive = True
@@ -122,6 +129,62 @@ class DataManager:
         """
         logging.info("Contour Data Request")
         return self.contour_vm.get_data("mag")
+
+    def zerorpc_baud_rate_list(self):
+        """
+        Get the baud rate list.
+        :return: Baud rate list.
+        """
+        logging.info("ADCP Terminal Baud Rate List Request")
+        return self.adcp_terminal.baud_rate_list()
+
+    def zerorpc_comm_port_list(self):
+        """
+        Get the baud rate list.
+        :return: Baud rate list.
+        """
+        logging.info("ADCP Terminal Comm Port List Request")
+        return self.adcp_terminal.comm_port_list()
+
+    def zerorpc_adcp_terminal(self):
+        """
+        Get the terminal data.
+        :return: Baud rate list.
+        """
+        logging.info("ADCP Terminal Data Request")
+        return self.adcp_terminal.get_data()
+
+    def zerorpc_connect_adcp_serial_port(self, comm_port: str, baud: int):
+        """
+        Get the terminal data.
+        :return: Baud rate list.
+        """
+        logging.info("Connect Serial Port: " + str(comm_port) + ":" + str(baud))
+        return self.adcp_terminal.connect_serial(comm_port, baud)
+
+    def zerorpc_disconnect_adcp_serial_port(self):
+        """
+        Get the terminal data.
+        :return: Baud rate list.
+        """
+        logging.info("Disconnect Serial Port")
+        return self.adcp_terminal.disconnect_serial()
+
+    def zerorpc_cmd_break_adcp_serial_port(self):
+        """
+        Get the terminal data.
+        :return: Baud rate list.
+        """
+        logging.info("Send BREAK")
+        return self.adcp_terminal.serial_break()
+
+    def zerorpc_cmd_adcp_serial_port(self, cmd: str):
+        """
+        Get the terminal data.
+        :return: Baud rate list.
+        """
+        logging.info("Send CMD: " + cmd)
+        return self.adcp_terminal.send_cmd(cmd)
 
     def shutdown(self):
         """
