@@ -57,7 +57,7 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
         comm: '',
         baud: '115200',
         zerorcpPort: 4241,
-        updateRate: 250
+        updateRate: 1000
     }
 
     handleBaudChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -190,6 +190,15 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
                     baud: term_data.baud,
                     commPort: term_data.commPort,
                 });
+
+                // Add the comm port to the list if it does not exist
+                if(parent.state.commPortList.includes(term_data.commPort) == false)
+                {
+                    var joined = parent.state.commPortList.concat(term_data.commPort);
+                    parent.setState({
+                        commPortList: joined,
+                    });
+                }
             }
       });  
         }, 
