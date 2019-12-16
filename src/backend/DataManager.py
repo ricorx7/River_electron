@@ -200,14 +200,33 @@ class DataManager:
         self.ens_thread_event.set()
 
     def handle_adcp_serial_data(self, sender, data):
+        """
+        Receive raw serial data from the serial port.
+        Pass the data to the codec to be processed.
+        :param sender: Not Used.
+        :param data: Raw ensemble binary data.
+        :return:
+        """
         logging.info("DataManager: Serial Data Received")
         self.adcp_codec.add(data)
 
     def handle_ensemble_data(self, sender, ens):
+        """
+        Receiver data from the codec and process it by passing it
+        to the data manager incoming ensemble.
+        :param sender:Not Used
+        :param ens: Ensemble from codec
+        :return:
+        """
         self.incoming_ens(ens)
 
-
     def incoming_ens(self, ens: Ensemble):
+        """
+        Handle all incoming data to be displayed.
+        Put the data in a queue then wakeup the thread.
+        :param ens: Ensemble to be displayed.
+        :return:
+        """
         # Add the data to the queue
         self.ens_queue.append(ens)
 
@@ -232,6 +251,8 @@ class DataManager:
 
                 # QA QC the data
                 EnsembleQC.scan_ensemble(ens)
+
+                # Screen the data
 
                 # Pass data
                 if ens:

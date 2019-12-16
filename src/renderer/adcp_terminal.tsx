@@ -47,6 +47,8 @@ type AdcpTerminalState = {
 interface IAdcpTerminalData {
     isConnected: boolean;                           // isConnected flag
     termData: string;                               // Terminal port data
+    baud: number;                                   // Current Baud Rate
+    commPort: string;                               // Comm Port
 }
 
 
@@ -185,6 +187,8 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
                 parent.setState({
                     isConnected: term_data.isConnected,
                     termData: term_data.termData,
+                    baud: term_data.baud,
+                    commPort: term_data.commPort,
                 });
             }
       });  

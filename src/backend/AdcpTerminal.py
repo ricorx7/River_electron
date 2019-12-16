@@ -64,6 +64,8 @@ class AdcpTerminalVM:
         term_data = {
             "isConnected": is_connected,
             "termData": self.serialTextBrowser,
+            "baud": self.rti_config.config['Comm']['Baud'],
+            "commPort": self.rti_config.config['Comm']['Port']
         }
 
         # Release lock
@@ -242,14 +244,6 @@ class AdcpTerminalVM:
         :return:
         """
         logging.info("Data Received")
-        #logging.info(data)
-        self.serialTextBrowser += str(data)
-
-        # Prevent overflow of buffer, if greater than buffer limit
-        # Get the last bytes in buffer
-        if len(self.serialTextBrowser) > 5000:
-            self.serialTextBrowser = self.serialTextBrowser[-5000]
-
 
 def thread_worker(vm):
     """
@@ -264,13 +258,20 @@ def thread_worker(vm):
                 data = vm.adcp.read(vm.adcp.raw_serial.in_waiting)
 
                 try:
+                    # Display the data as ASCII if it is a response from the ADCP
+                    # If it is raw binary ADCP data, this will fail so just display binary data
                     ascii_data = data.decode('ascii')
-                    #vm.display_console_data_changed.emit(ascii_data)        # Emit signal
+                    vm.serialTextBrowser += ascii_data
+
                     logging.debug(ascii_data)
                 except Exception:
                     # Do nothing
-                    #vm.display_console_data_changed.emit(str(data))         # Emit signal
-                    logging.debug("Error: " + str(data))
+                    vm.serialTextBrowser += str(data)
+
+                # Prevent overflow of buffer, if greater than buffer limit
+                # Get the last bytes in buffer
+                if len(vm.serialTextBrowser) > 5000:
+                    vm.serialTextBrowser = vm.serialTextBrowser[-5000]
 
                 # Record data if turned on
                 vm.record_data(data)
