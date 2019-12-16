@@ -29,10 +29,12 @@ type IntensityPlotState = {
  * server dictionary.
  */
 interface IShipTrackPlotData {
-    quiver_x: [];                       //  Quiver X points
-    quiver_y: [];                       //  Quiver Y points
-    lat: [];                            //  Lat
-    lon: [];                            //  Lon
+    quiver_x: [];                       // Quiver X points
+    quiver_y: [];                       // Quiver Y points
+    quiver_text: [];                    // Quiver Hover Text
+    lat: [];                            // Lat
+    lon: [];                            // Lon
+    lat_lon_text: [];                   // Lat Lon Hover Text
     last_lat: 0.0;                      // Last Latitude
     last_lon: 0.0;                      // Last Longitude
   }
@@ -158,6 +160,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                       y: st_data.quiver_y,
                       type: "scatter" as const,
                       name: "Average",
+                      text: st_data.quiver_text,          // Hover Text
                     };
                     plotData.push(quiver);
 
@@ -167,6 +170,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                       type: "scatter" as const,
                       connectgaps: true,                  // NONE plots nothing, so connect
                       name: "Ship Track",
+                      //text: st_data.lat_lon_text,         // Hover Text
                     };
                     plotData.push(shiptrack);
 

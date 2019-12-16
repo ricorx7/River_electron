@@ -33,3 +33,4 @@ Thumbs.db
 #virtualenv
 src/backend/venv
 src/backend/.idea
+src/backend/config.ini

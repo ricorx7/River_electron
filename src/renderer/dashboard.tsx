@@ -71,22 +71,22 @@ const Dashboard = () => {
                 <Grid container spacing={2}>
                     <Grid item xs={8} sm={4}>
                         <Paper className={classes.paper}>
-                            <IntensityPlotDisplay zerorcpPort={4241} updateRate={250} />
+                            <IntensityPlotDisplay zerorcpPort={4241} updateRate={500} />
                         </Paper>
                     </Grid>
                     <Grid item xs={8} sm={4}>
                         <Paper className={classes.paper}>
-                            <ShipTrackPlotDisplay />
+                            <ShipTrackPlotDisplay zerorcpPort={4241} updateRate={500} />
                         </Paper>
                     </Grid>
                     <Grid item xs={8} sm={4}>
                         <Paper className={classes.paper}>
-                            <TabularDisplay zerorcpPort={4241} updateRate={250} />
+                            <TabularDisplay zerorcpPort={4241} updateRate={500} />
                         </Paper>
                     </Grid>
                     <Grid item xs={12}>
                         <Paper className={classes.paper}>
-                            <ContourPlotDisplay />
+                            <ContourPlotDisplay zerorcpPort={4241} updateRate={500} />
                         </Paper>
                     </Grid>
                 </Grid>
