@@ -13,7 +13,7 @@ from TabularDataVM import TabularDataVM
 from ShipTrackVM import ShipTrackVM
 from AdcpTerminal import AdcpTerminalVM
 from rti_python.Utilities.config import RtiConfig
-
+from rti_python.Codecs.AdcpCodec import AdcpCodec
 
 class DataManager:
 
@@ -22,11 +22,15 @@ class DataManager:
         self.rti_config = RtiConfig()
         self.rti_config.init_terminal_config()
 
+        self.adcp_codec = AdcpCodec()
+        self.adcp_codec.ensemble_event += self.handle_ensemble_data
+
         self.tabular_vm = TabularDataVM()
         self.amp_vm = AmplitudeVM()
         self.contour_vm = ContourVM()
         self.shiptrack_vm = ShipTrackVM()
         self.adcp_terminal = AdcpTerminalVM(self.rti_config)
+        self.adcp_terminal.on_serial_data += self.handle_adcp_serial_data
 
         # Ensemble processing thread
         self.ens_thread_alive = True
@@ -194,6 +198,14 @@ class DataManager:
         # Shutdown the Ensemble thread
         self.ens_thread_alive = False
         self.ens_thread_event.set()
+
+    def handle_adcp_serial_data(self, sender, data):
+        logging.info("DataManager: Serial Data Received")
+        self.adcp_codec.add(data)
+
+    def handle_ensemble_data(self, sender, ens):
+        self.incoming_ens(ens)
+
 
     def incoming_ens(self, ens: Ensemble):
         # Add the data to the queue

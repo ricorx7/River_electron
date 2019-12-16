@@ -242,7 +242,7 @@ class AdcpTerminalVM:
         :return:
         """
         logging.info("Data Received")
-        logging.info(data)
+        #logging.info(data)
         self.serialTextBrowser += str(data)
 
         # Prevent overflow of buffer, if greater than buffer limit

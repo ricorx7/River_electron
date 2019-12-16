@@ -200,7 +200,7 @@ export class ContourPlotDisplay extends React.Component<ContourPlotDisplayProps,
                         // Set the layout of the plot
                         // This sets the axis and 
                         var layout = {
-                            title: 'Amplitude Data',
+                            title: 'Water Velocity Data',
                             yaxis: {
                                 title: 'bin',
                                 side: 'left' as const,
@@ -227,7 +227,7 @@ export class ContourPlotDisplay extends React.Component<ContourPlotDisplayProps,
                         if(parent.state.isUpward) 
                         {
                             layout = {
-                                title: 'Amplitude Data',
+                                title: 'Water Velocity Data',
                                 yaxis: {
                                     title: 'bin',
                                     side: 'left' as const,
