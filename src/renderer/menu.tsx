@@ -33,6 +33,7 @@ import MeasurementDisplay from './measurements'
 import IntensityPlotDisplay from './intensity_plot'
 import ContourPlotDisplay from './contour_plot'
 import ShipTrackPlotDisplay from './shiptrack_plot'
+import TimeseriesPlotDisplay from './timeseries_plot'
 import ConfigureDisplay from './configure'
 import { HashRouter, Route, Link } from "react-router-dom";
 
@@ -243,7 +244,7 @@ export default function MiniDrawer() {
             <ListItemText primary="ShipTrack Plot" />
           </ListItemLink>
 
-          <ListItemLink href="#shiptrack">
+          <ListItemLink href="#timeseries">
             <ListItemIcon>
               <TimelineIcon />
             </ListItemIcon>
@@ -264,6 +265,7 @@ export default function MiniDrawer() {
             <Route path="/shiptrack"  component={ ShipTrackPlotDisplay } />
             <Route path="/profile"  component={ IntensityPlotDisplay } />
             <Route path="/configure"  component={ ConfigureDisplay } />
+            <Route path="/timeseries"  component={ TimeseriesPlotDisplay } />
           </div>
         </HashRouter>
       </main>
