@@ -5,7 +5,7 @@
  import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import Grid from '@material-ui/core/Grid';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, Theme, withStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -13,9 +13,24 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import { sizing } from '@material-ui/system';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 import { string } from 'prop-types';
 var zerorpc = require('zerorpc');
 
+
+const useStyles = makeStyles((theme: Theme) =>
+createStyles({
+    root: {
+        padding: theme.spacing(3, 2),
+      },
+    buttonPadding: {    
+      padding: '30px',   
+    },
+  })
+);
 
 /**
  * ADCP Parameters.
@@ -38,6 +53,8 @@ type AdcpTerminalState = {
     baudList: number[];                             // Baud rate list
     termData: string;                               // Terminal data to display
     isConnected: boolean;                           // Flag if connected to serial port
+    sendCmd: string;                                // Command to send to the serial port
+    bulkCmds: string;                               // List of bulk commands
     zerorpcClient: any;
   }
 
@@ -60,56 +77,114 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
         updateRate: 1000
     }
 
+    // Set the baud rate.
     handleBaudChange = (event: React.ChangeEvent<{ value: unknown }>) => {
         this.setState( 
         {
             baud: event.target.value as number
-        }
-        );
+        });
       };
 
+      // Set the comm port.
       handleCommPortChange = (event: React.ChangeEvent<{ value: unknown }>) => {
         this.setState( 
         {
             commPort: event.target.value as string
-        }
-        );
+        });
       };
 
+      // Connect serial port.
       handleConnectClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-            // Get the Comm Port List
-            this.state.zerorpcClient.invoke("zerorpc_connect_adcp_serial_port", this.state.commPort, this.state.baud, function(error: string, comm_data: string[], more: string) {
-                console.log("Connect Serial Port");
-            });
+        this.state.zerorpcClient.invoke("zerorpc_connect_adcp_serial_port", this.state.commPort, this.state.baud, function(error: string, comm_data: string[], more: string) {
+            console.log("Connect Serial Port");
+        });
       };
 
+      // Disconnect serial port.
       handleDisconnectClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        // Get the Comm Port List
         this.state.zerorpcClient.invoke("zerorpc_disconnect_adcp_serial_port", function(error: string, comm_data: string[], more: string) {
             console.log("Disconnect Serial port");
-            });
-        };
+        });
+       };
 
+      // Send a BREAK to the serial port
       handleBreakClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        // Get the Comm Port List
         this.state.zerorpcClient.invoke("zerorpc_cmd_break_adcp_serial_port", function(error: string, comm_data: string[], more: string) {
             console.log("SEND BREAK");
             });
         };
 
+        // Send START Command
         handleStartPingingClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             this.sendAdcpSerialCommand("START");
         };
+
+        // Send STOP Command
+        handleStopPingingClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            this.sendAdcpSerialCommand("STOP");
+        };
+
+        // Send CSHOW Command
+        handleCshowClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            this.sendAdcpSerialCommand("CSHOW");
+        };
+
+        // Clear Console
+        handleClearClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            this.state.zerorpcClient.invoke("zerorpc_clear_adcp_serial", function(error: string, comm_data: string[], more: string) {
+                console.log("Clear Console");
+                });
+        };
+
+        // Handle the command input
+        onCmdChange = (event: React.ChangeEvent<{value: unknown;}>) => {
+            this.setState( 
+            {
+                sendCmd: event.target.value as string
+            });
+        };
+
+        // Handle the command input
+        onBulkCmdChange = (event: React.ChangeEvent<{value: unknown;}>) => {
+            this.setState( 
+            {
+                bulkCmds: event.target.value as string
+            });
+        };
+
+        // Send the command to the serial port.
+        handleSendCmdClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            if(this.state.sendCmd.length > 0)
+            {
+                this.sendAdcpSerialCommand(this.state.sendCmd);
+
+                // Reset the command button
+                this.setState({
+                    sendCmd: ""
+                });
+            }
+        };
+
+        // Send Bulk commands
+        handleSendBulkCmdClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            if(this.state.bulkCmds.length > 0)
+            {
+                this.state.zerorpcClient.invoke("zerorpc_bulk_cmd_adcp_serial_port", this.state.bulkCmds, function(error: string, comm_data: string[], more: string) {
+                    console.log("Send Bulk Cmds");
+                });
+            }
+          };
 
         /**
          * Send a ADCP Serial Command.
          */
         sendAdcpSerialCommand = (cmd: string) => {
-                    // Get the Comm Port List
-        this.state.zerorpcClient.invoke("zerorpc_cmd_adcp_serial_port", cmd, function(error: string, comm_data: string[], more: string) {
-            console.log("Send Cmd: START");
+            this.state.zerorpcClient.invoke("zerorpc_cmd_adcp_serial_port", cmd, function(error: string, comm_data: string[], more: string) {
+                console.log("Send Cmd: " + cmd);
             });
         }
+
+
 
   /**
    * Called when the component is first created.  
@@ -128,7 +203,9 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
         commPort: "",                               // Serial COMM Port selected
         baud: 115200,                               // Selected baud rate
         termData: '',                               // Terminal data to display
-        isConnected: false,                           // Flag if connected to serial port
+        sendCmd: '',                                // Command to send
+        bulkCmds: '',                               // Bulk commands to send
+        isConnected: false,                         // Flag if connected to serial port
         baudList: [],                               // Initialize the baud list to nothing, get from python
         commPortList: [],                           // Initialize the comm port list to nothing, get from python
       }
@@ -205,63 +282,111 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
         this.props.updateRate);    // Interval Time
     }
 
-componentWillUnmount() {
+    // Unmount the component
+    componentWillUnmount() {
+        // Stop the interval timer thread
+        this.setState({
+        stopThread: true
+        })
+    }
 
-// Stop the interval timer thread
-this.setState({
-  stopThread: true
-})
-}
-
+    // Display
     public render() {
+
         return(
             <div>
-            ADCP Terminal
-        <FormControl>
-            <InputLabel id="comm-port-list-select-label">COMM Port</InputLabel>
-            <Select labelId="comm-port-list-select-label" 
-                    id="comm-port-list-select"
-                    value={this.state.commPort}
-                    onChange={this.handleCommPortChange}
-                    >
-                        {this.state.commPortList.map((value, index) => 
-                            <MenuItem key={index} value={value}>{value}</MenuItem>
-                        )}
-            </Select>
-        </FormControl>
-        <FormControl>
-            <InputLabel id="baud-rate-list-select-label">Baud Rate</InputLabel>
-            <Select labelId="baud-rate-list-select-label" 
-                    id="baud-rate-list-select"
-                    value={this.state.baud}
-                    onChange={this.handleBaudChange}
-                    >
-                        {this.state.baudList.map((value, index) => 
-                            <MenuItem key={index} value={value}>{value}</MenuItem>
-                        )}
-            </Select>
-        </FormControl>
 
-        <Button variant="contained" color="primary" onClick={this.handleConnectClick}>CONNECT</Button>
-        <Button variant="contained" color="secondary" onClick={this.handleDisconnectClick}>DISCONNECT</Button>
-        <Button variant="contained" color="primary" onClick={this.handleBreakClick}>BREAK</Button>
-        <Button variant="contained" color="default" onClick={this.handleStartPingingClick}>Start Pinging</Button>
-        
+                    <Grid container spacing={3} >
+                        <Grid item xs={2}>
+                            <FormControl>
+                            <InputLabel id="comm-port-list-select-label">Port</InputLabel>
+                            <Select labelId="comm-port-list-select-label" 
+                                    id="comm-port-list-select"
+                                    value={this.state.commPort}
+                                    onChange={this.handleCommPortChange}
+                                    >
+                                        {this.state.commPortList.map((value, index) => 
+                                            <MenuItem key={index} value={value}>{value}</MenuItem>
+                                        )}
+                            </Select>
+                            </FormControl>
+                        </Grid>
 
-        <br />
-        <span>Comm Port: {this.state.commPort}</span>
-        <br />
-        <span>Baud: {this.state.baud}</span>
-        <br />
-        <span>IsConnected: {this.state.isConnected}</span>
-        <br />
-        <span><TextareaAutosize aria-label="minimum height" rowsMax={30} placeholder="No ADCP Data" value={this.state.termData}/></span>
-        <br />
-        <span>{this.state.termData}</span>
+                        <Grid item xs={2}>
+                            <FormControl>
+                                <InputLabel id="baud-rate-list-select-label">Baud Rate</InputLabel>
+                                <Select labelId="baud-rate-list-select-label" 
+                                        id="baud-rate-list-select"
+                                        value={this.state.baud}
+                                        onChange={this.handleBaudChange}
+                                        >
+                                            {this.state.baudList.map((value, index) => 
+                                                <MenuItem key={index} value={value}>{value}</MenuItem>
+                                            )}
+                                </Select>
+                            </FormControl>
+                        </Grid>
 
-        </div>
+                        <Grid item xs={10}></Grid>
+
+                        <Grid item xs={12}>
+                            <ButtonGroup color="secondary" size="small" aria-label="contained primary button group">
+                                <Button onClick={this.handleConnectClick} disabled={this.state.isConnected} >CONNECT</Button>
+                                <Button onClick={this.handleDisconnectClick}>DISCONNECT</Button>
+                            </ButtonGroup>
+                        </Grid>
+
+                        <Grid item xs={3}>
+                        Comm Port: {this.state.commPort}
+                        </Grid>
+                        <Grid item xs={3}>
+                        Baud: {this.state.baud}
+                        </Grid>
+                        <Grid item xs={6}></Grid>
+
+                        <Grid item xs={8}>
+                            <TextField
+                            variant="outlined"
+                            multiline
+                            fullWidth
+                            rowsMax={30} 
+                            rows={30}
+                            placeholder="No ADCP Data" 
+                            value={this.state.termData} />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField multiline rows={30} variant="outlined" label="Command List" fullWidth onChange={this.onBulkCmdChange}  value={this.state.bulkCmds} />
+                        </Grid>
+                        
+                        <Grid item xs={8}>
+                            <ButtonGroup>
+                                <Button onClick={this.handleBreakClick} disabled={!this.state.isConnected}>BREAK</Button>
+                                <Button onClick={this.handleStartPingingClick} disabled={!this.state.isConnected}>Start Pinging</Button>
+                                <Button onClick={this.handleStopPingingClick} disabled={!this.state.isConnected}>Stop Pinging</Button>
+                                <Button onClick={this.handleCshowClick} disabled={!this.state.isConnected}>CSHOW</Button>
+                                <Button onClick={this.handleClearClick} disabled={!this.state.isConnected}>CLEAR</Button>
+                            </ButtonGroup>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <ButtonGroup>
+                                <Button onClick={this.handleSendBulkCmdClick} disabled={!this.state.isConnected}>SEND COMMAND LIST</Button>
+                            </ButtonGroup>
+                        </Grid>
+
+                        <Grid item xs={3}>
+                            <TextField id="standard-basic" label="Send ADCP Command" onChange={this.onCmdChange} value={this.state.sendCmd} />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <Button variant="contained" onClick={this.handleSendCmdClick} disabled={!this.state.isConnected}>SEND</Button>
+                        </Grid>
+                        <Grid item xs={6}></Grid>
+
+                    </Grid>
+                
+            </div>
         );
     }
 }
 
+//export default withStyles(styles)(AdcpTerminalView);
 export default AdcpTerminalView;

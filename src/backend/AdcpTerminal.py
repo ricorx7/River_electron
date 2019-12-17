@@ -29,8 +29,6 @@ class AdcpTerminalVM:
         self.totalBytesWrittenLabel = 0
         self.bytesWrittenLabel = ""
 
-        self.bulkCmdMlainTextEdit = ""
-
         self.MAX_SERIAL_CONSOLE_LEN = 9000
 
         self.serialTextBrowser = ""
@@ -229,8 +227,8 @@ class AdcpTerminalVM:
     def clear_bulk_cmd(self):
         self.bulkCmdMlainTextEdit = ""
 
-    def send_bulk_cmd(self):
-        cmds = self.bulkCmdMlainTextEdit.splitlines()
+    def send_bulk_cmd(self, bulk_cmds: str):
+        cmds = bulk_cmds.splitlines()
         for cmd in cmds:
             self.adcp.send_cmd(cmd + "\n")
             logging.debug("Write to serial port: " + cmd)

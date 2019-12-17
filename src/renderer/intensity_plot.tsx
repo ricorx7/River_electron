@@ -208,7 +208,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                                 range: [amp_data.numBins, 0]                        // Default to downward looking, start 0 at top
                             },
                             yaxis2: {
-                                title: 'meter',
+                                title: 'Depth [meter]',
                                 side: 'right' as const,                             // Set as opposite of side of other y axis
                                 overlaying: 'y' as const,                           // Know which axis to work with
                                 showgrid: false,
@@ -216,7 +216,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                             },
                             xaxis: {
                                 range: [0, 120],
-                                title: 'dB',
+                                title: 'Amplitude [dB]',
                             },
                             uirevision: 'true',
                             legend: {
@@ -236,7 +236,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                                     range: [0, amp_data.numBins]                                // Upward looking, start 0 at the bottom
                                 },
                                 yaxis2: {
-                                    title: 'meter',
+                                    title: 'Depth [meter]',
                                     side: 'right' as const,
                                     overlaying: 'y' as const,
                                     showgrid: false,
@@ -244,7 +244,7 @@ export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayPr
                                 },
                                 xaxis: {
                                     range: [120, 0],                
-                                    title: 'dB',
+                                    title: 'Amplitude [dB]',
                                 },
                                 uirevision: 'true',
                                 legend: {

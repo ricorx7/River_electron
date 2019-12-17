@@ -190,6 +190,20 @@ class DataManager:
         logging.info("Send CMD: " + cmd)
         return self.adcp_terminal.send_cmd(cmd)
 
+    def zerorpc_bulk_cmd_adcp_serial_port(self, bulk_cmds: str):
+        """
+        Send Bulk commands to serial port.
+        Each command is separated by a new line.
+        :param bulk_cmds: Commands.  One command per line.
+        :return:
+        """
+        logging.info("Send Bulk Commds: " + bulk_cmds)
+        return self.adcp_terminal.send_bulk_cmd(bulk_cmds)
+
+    def zerorpc_clear_adcp_serial(self):
+        logging.info("Clear Console")
+        self.adcp_terminal.clear_console()
+
     def shutdown(self):
         """
         Shutdown the object.

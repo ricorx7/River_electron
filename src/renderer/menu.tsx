@@ -22,6 +22,7 @@ import StorageIcon from '@material-ui/icons/Storage';
 import SettingsInputHdmiIcon from '@material-ui/icons/SettingsInputHdmi';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 import TimelineIcon from '@material-ui/icons/Timeline';
+import EqualizerIcon from '@material-ui/icons/Equalizer';
 import DirectionsBoatIcon from '@material-ui/icons/DirectionsBoat';
 import SettingsIcon from '@material-ui/icons/Settings';
 import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
@@ -230,7 +231,7 @@ export default function MiniDrawer() {
 
           <ListItemLink href="#profile">
             <ListItemIcon>
-              <TimelineIcon />
+              <EqualizerIcon />
             </ListItemIcon>
             <ListItemText primary="Amplitude Plot" />
           </ListItemLink>
@@ -240,6 +241,13 @@ export default function MiniDrawer() {
               <DirectionsBoatIcon />
             </ListItemIcon>
             <ListItemText primary="ShipTrack Plot" />
+          </ListItemLink>
+
+          <ListItemLink href="#shiptrack">
+            <ListItemIcon>
+              <TimelineIcon />
+            </ListItemIcon>
+            <ListItemText primary="Time Series" />
           </ListItemLink>
 
 
