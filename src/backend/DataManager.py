@@ -11,6 +11,7 @@ from AmplitudeVM import AmplitudeVM
 from ContourVM import ContourVM
 from TabularDataVM import TabularDataVM
 from ShipTrackVM import ShipTrackVM
+from TimeSeriesVM import TimeSeriesVM
 from AdcpTerminal import AdcpTerminalVM
 from rti_python.Utilities.config import RtiConfig
 from rti_python.Codecs.AdcpCodec import AdcpCodec
@@ -29,6 +30,7 @@ class DataManager:
         self.amp_vm = AmplitudeVM()
         self.contour_vm = ContourVM()
         self.shiptrack_vm = ShipTrackVM()
+        self.timeseries_vm = TimeSeriesVM()
         self.adcp_terminal = AdcpTerminalVM(self.rti_config)
         self.adcp_terminal.on_serial_data += self.handle_adcp_serial_data
 
@@ -80,13 +82,8 @@ class DataManager:
         if files:
             logging.info("Loading files: " + str(files))
 
-            # Reset the plot when playback is called again
-            if self.contour_vm:
-                self.contour_vm.reset()
-            if self.tabular_vm:
-                self.tabular_vm.reset()
-            if self.shiptrack_vm:
-                self.shiptrack_vm.reset()
+            # Reset VM plots
+            self.reset_vm()
 
             # Run a thread to playback the file
             playback_mgr = PlaybackManager(self)
@@ -133,6 +130,58 @@ class DataManager:
         """
         logging.info("Contour Data Request")
         return self.contour_vm.get_data("mag")
+
+    def zerorpc_timeseries_plot(self,
+                                is_boat_speed: bool,
+                                is_boat_dir: bool,
+                                is_heading: bool,
+                                is_pitch: bool,
+                                is_roll: bool,
+                                is_temp: bool,
+                                is_gnss_qual: bool,
+                                is_gnss_hdop: bool,
+                                is_num_sats: bool,
+                                is_water_speed: bool,
+                                is_water_dir: bool,
+                                max_ens: int):
+        """
+        Get the latest TimeSeries data.
+        :param is_boat_speed: Flag if Boat Speed Plot is selected.
+        :param is_boat_dir: Flag if Boat Direction Plot is selected.
+        :param is_heading: Flag if Heading Plot is selected.
+        :param is_pitch: Flag if Pitch Plot is selected.
+        :param is_roll: Flag if Roll Plot is selected.
+        :param is_temp: Flag if Temperature Plot is selected.
+        :param is_gnss_qual: Flag if GNS Quality Inidicator Plot is selected.
+        :param is_gnss_hdop: Flag if GNSS HDOP Plot is selected.
+        :param is_num_sats: Flag if Number of GNSS Sat Plot is selected.
+        :param is_water_speed: Flag if Water Speed Plot is selected.
+        :param is_water_dir: Flag if Water Direction Plot is selected.
+        :param max_ens: Number of ensembles in time series.
+        :return:
+        """
+        logging.info("Time Series Data Request")
+        return self.timeseries_vm.get_data(is_boat_speed,
+                                           is_boat_dir,
+                                           is_heading,
+                                           is_pitch,
+                                           is_roll,
+                                           is_temp,
+                                           is_gnss_qual,
+                                           is_gnss_hdop,
+                                           is_num_sats,
+                                           is_water_speed,
+                                           is_water_dir,
+                                           max_ens)
+
+    def zerorpc_reset_plots(self, subsystem: int):
+        """
+        Get the latest amplitude data.
+        :param subsystem: Subsystem number.
+        :return:
+        """
+        logging.info("Reset Plots Request")
+        return self.reset_vm()
 
     def zerorpc_baud_rate_list(self):
         """
@@ -213,6 +262,21 @@ class DataManager:
         self.ens_thread_alive = False
         self.ens_thread_event.set()
 
+    def reset_vm(self):
+        """
+        Reset the ViewModels.
+        :return:
+        """
+        # Reset the plot when playback is called again
+        if self.contour_vm:
+            self.contour_vm.reset()
+        if self.tabular_vm:
+            self.tabular_vm.reset()
+        if self.shiptrack_vm:
+            self.shiptrack_vm.reset()
+        if self.timeseries_vm:
+            self.timeseries_vm.reset()
+
     def handle_adcp_serial_data(self, sender, data):
         """
         Receive raw serial data from the serial port.
@@ -286,6 +350,9 @@ class DataManager:
 
                         # Pass data to Ship Track plot VM
                         self.shiptrack_vm.set_ens(ens)
+
+                        # Pass data to Time Series plot VM
+                        self.timeseries_vm.set_ens(ens)
 
             # Reset the event
             self.ens_thread_event.clear()

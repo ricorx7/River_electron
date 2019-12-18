@@ -18,6 +18,8 @@ import Paper from '@material-ui/core/Paper';
 import { sizing } from '@material-ui/system';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import { string } from 'prop-types';
+import PropTypes from 'prop-types';
+import HigherOrderComponent from 'prop-types'
 var zerorpc = require('zerorpc');
 
 
@@ -31,6 +33,18 @@ createStyles({
     },
   })
 );
+
+const styles = (theme: Theme) => ({
+    root: {
+      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+      border: 0,
+      borderRadius: 3,
+      boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+      color: 'white',
+      height: 48,
+      padding: '0 30px',
+    },
+  });
 
 /**
  * ADCP Parameters.
@@ -185,7 +199,6 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
         }
 
 
-
   /**
    * Called when the component is first created.  
    * The state will be initialized.
@@ -296,35 +309,39 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
         return(
             <div>
 
-                    <Grid container spacing={3} >
-                        <Grid item xs={2}>
-                            <FormControl>
-                            <InputLabel id="comm-port-list-select-label">Port</InputLabel>
-                            <Select labelId="comm-port-list-select-label" 
-                                    id="comm-port-list-select"
-                                    value={this.state.commPort}
-                                    onChange={this.handleCommPortChange}
-                                    >
-                                        {this.state.commPortList.map((value, index) => 
-                                            <MenuItem key={index} value={value}>{value}</MenuItem>
-                                        )}
-                            </Select>
+                    <Grid container spacing={1} >
+                        <Grid item xs={1}>
+                            <FormControl variant="outlined">
+                                <InputLabel id="demo-simple-select-outlined-label">Port</InputLabel>
+                                <Select
+                                labelId="comm-port-list-select-label" 
+                                id="comm-port-list-select"
+                                value={this.state.commPort}
+                                onChange={this.handleCommPortChange}
+                                labelWidth={30}
+                                >
+                                    {this.state.commPortList.map((value, index) => 
+                                        <MenuItem key={index} value={value}>{value}</MenuItem>
+                                    )}
+                                </Select>
                             </FormControl>
                         </Grid>
 
-                        <Grid item xs={2}>
-                            <FormControl>
+                        <Grid item xs={1}>
+                        <FormControl variant="outlined">
                                 <InputLabel id="baud-rate-list-select-label">Baud Rate</InputLabel>
                                 <Select labelId="baud-rate-list-select-label" 
                                         id="baud-rate-list-select"
                                         value={this.state.baud}
                                         onChange={this.handleBaudChange}
-                                        >
-                                            {this.state.baudList.map((value, index) => 
-                                                <MenuItem key={index} value={value}>{value}</MenuItem>
-                                            )}
+                                        labelWidth={150}
+                                >
+                                    {this.state.baudList.map((value, index) => 
+                                        <MenuItem key={index} value={value}>{value}</MenuItem>
+                                    )}
                                 </Select>
                             </FormControl>
+
                         </Grid>
 
                         <Grid item xs={10}></Grid>
@@ -388,5 +405,7 @@ export class AdcpTerminalView extends React.Component<AdcpTerminalProps, AdcpTer
     }
 }
 
+
+
 //export default withStyles(styles)(AdcpTerminalView);
-export default AdcpTerminalView;
+export default withStyles(styles)(AdcpTerminalView);

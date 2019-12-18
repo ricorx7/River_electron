@@ -11,8 +11,10 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { TextField } from "@material-ui/core";
 var zerorpc = require('zerorpc');
+import TimeseriesPlotSettings from './timeseries_plot_settings';
 
-type TimeseriesPlotDisplayProps = {
+type TimeseriesPlotProps = {
+    zerorcpIP: string,
     zerorcpPort: Number,
     updateRate: Number
 }
@@ -21,23 +23,24 @@ type TimeseriesPlotDisplayProps = {
  * State of the display
  */
 type TimeseriesPlotState = {
-    numBeams: Number;                             // Number of beams
-    numBins: Number;                              // Number of bins
-    minBinDepth: Number;                          // Minimum depth of first bin (m)
-    maxBinDepth: Number;                          // Maximum depth of the last bin (m)
-    binData: number[];                            // Bin numbers
-    stopThread: Boolean;                          // Flag to stop the timer
-    beam0Data: number[];                          // Beam 0 Data
-    beam1Data: number[];                          // Beam 1 Data
-    beam2Data: number[];                          // Beam 2 Data
-    beam3Data: number[];                          // Beam 3 Data
-    vertData: number[];                           // Vertical Beam Data
-    isUpward: boolean;                            // Flag if the data is upward or downward
-    data: Plotly.Data[]                           // Data to display
-    layout: Partial<Plotly.Layout>;               // Layout of the plot
-    setSettingsModalOpen: boolean;                // Open or close the modal settings
-    modalStyle: any;                              // Modal style
-    config: {};                                   // Configuration of plot (Plotly.Config)
+    isBoatSpeed: boolean;                   // Boat Speed Plot selected
+    isBoatDir: boolean;                   // Boat Direction Plot selected
+    isHeading: boolean;                     // Heading Plot selected
+    isPitch: boolean;                       // Pitch Plot selected
+    isRoll: boolean;                        // Roll Plot selected
+    isTemperature: boolean;                 // Temperature Plot selected
+    isGnssQual: boolean;                    // GNSS Quality Indicator Plot selected
+    isGnssHdop: boolean;                    // GNSS HDOP Plot selected
+    isNumSat: boolean;                      // Number of GNSS satellites Plot selected
+    isWaterSpeed: boolean;                  // Water Speed Plot selected
+    isWaterDir: boolean;                    // Water Direction Plot selected
+    stopThread: Boolean;                    // Flag to stop the timer
+    maxEns: Number;                         // Maximum number of ensembles to plot
+    data: Plotly.Data[]                     // Data to display
+    layout: Partial<Plotly.Layout>;         // Layout of the plot
+    setSettingsModalOpen: boolean;          // Open or close the modal settings
+    modalStyle: any;                        // Modal style
+    config: {};                             // Configuration of plot (Plotly.Config)
   }
 
 /**
@@ -47,38 +50,43 @@ type TimeseriesPlotState = {
  * server dictionary.
  */
 interface ITimeseriesPlotData {
-    numBeams: Number;                       // Number of beams
-    numBins: Number;                        // Number of bins
-    binData: number[];                            // Bin numbers
-    beam0Data: number[];                          // Beam 0 Data
-    beam1Data: number[];                          // Beam 1 Data
-    beam2Data: number[];                          // Beam 2 Data
-    beam3Data: number[];                          // Beam 3 Data
-    vertData: number[];                           // Vertical Beam Data
-    isUpward: boolean;                      // Flag if upward or downward looking data
-    minBinDepth: number;                    // Min bin depth in meter for plot axis
-    maxBinDepth: number;                    // Max bin depth in meters for plot axis
+    isBoatSpeed: boolean;                   // Boat Speed Plot selected
+    isBoatDir: boolean;                   // Boat Direction Plot selected
+    isHeading: boolean;                     // Heading Plot selected
+    isPitch: boolean;                       // Pitch Plot selected
+    isRoll: boolean;                        // Roll Plot selected
+    isTemperature: boolean;                 // Temperature Plot selected
+    isGnssQual: boolean;                    // GNSS Quality Indicator Plot selected
+    isGnssHdop: boolean;                    // GNSS HDOP Plot selected
+    isNumSat: boolean;                      // Number of GNSS satellites Plot selected
+    isWaterSpeed: boolean;                  // Water Speed Plot selected
+    isWaterDir: boolean;                    // Water Direction Plot selected
+    boatSpeedData: number[];                // Boat Speed data
+    boatDirData: number[];                  // Boat Direction data
+    headingData: number[];                  // Heading data
+    pitchData: number[];                    // Pitch data
+    rollData: number[];                     // Roll data
+    temperatureData: number[];              // Temperature data
+    gnssQualData: number[];                 // GNSS Quality Inidicator data
+    gnssHdopData: number[];                 // GNSS HDOP data
+    numSatData: number[];                   // Number of GNSS satellites data
+    waterSpeedData: number[];               // Water Speed data
+    waterDirData: number[];                 // Water Direction data
+    X_dt: number[];                         // X Axis - Date Time
+    maxEns: Number;                         // Maximum Number of ensembles to plot
   }
 
-  function getModalStyle() {
-    const top = 50;
-    const left = 50;
-  
-    return {
-      top: `${top}%`,
-      left: `${left}%`,
-      transform: `translate(-${top}%, -${left}%)`,
-    };
-  }
-
-export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotDisplayProps, TimeseriesPlotState> {
+export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, TimeseriesPlotState> {
     static defaultProps = {
+        zerorcpIP: "127.0.0.1",
         zerorcpPort: 4241,
-        updateRate: 250
+        updateRate: 500
     }
 
     public handleClick = (evt: any) => alert('click')
     public handleHover = (evt: any) => alert('hover')
+
+    private timeSeriesSettingsRef = React.createRef<HTMLDivElement>();
 
      /**
    * Called when the component is first created.  
@@ -94,26 +102,50 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotDisplay
     // Initialize the state
     this.setState(
       {
-        numBeams: 4,
-        numBins: 0,
-        minBinDepth: 0,
-        maxBinDepth: 0,
-        binData: [],
-        beam0Data: [],
-        beam1Data: [],
+        maxEns: 20,
+        //isHeading: true,
+        //isPitch: true,
+        //isRoll: true,
+        //isTemperature: true,
+        //isBoatSpeed: true,
+        //isBoatDir: true,
+        isGnssQual: true,
+        isGnssHdop: true,
+        isNumSat: true,
+        //isWaterSpeed: true,
+        //isWaterDir: true,
+        data: [],
         stopThread: false,
         setSettingsModalOpen: false,
-        modalStyle: getModalStyle,
         layout: {},
       }
     );
 
+
+
+    console.log("Create Time Series Plot Layout");
+    // Set the layout of the plot
+    // This sets the axis and 
+    var layout = {
+        title: 'Time Series',
+        yaxis: {
+            title: 'Date/Time',
+        },
+        uirevision: 'true',
+        legend: {
+          "orientation": "h" as const,
+          //x: 0.1, 
+          //y: 1.1,
+        },
+        
+    };
+
     // Create the zerorpc connection to the python server
     // Use the port given to create the port
     var client = new zerorpc.Client();
-    var zerorpcIP = "tcp://127.0.0.1:" + this.props.zerorcpPort.toString();
+    var zerorpcIP = "tcp://" + this.props.zerorcpIP + ":" + this.props.zerorcpPort.toString();
     client.connect(zerorpcIP);
-    
+
     // Created so the callback function can use parent to set state
     var parent = this;
 
@@ -148,7 +180,20 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotDisplay
      */
     setInterval(function() {
             // Callback function for the zerorpc to talk to the python backend
-            client.invoke("zerorpc_amp_plot", 0, function(error: string, amp_data: ITimeseriesPlotData, more: string) {
+            client.invoke("zerorpc_timeseries_plot", 
+                parent.state.isBoatSpeed,
+                parent.state.isBoatDir,
+                parent.state.isHeading, 
+                parent.state.isPitch, 
+                parent.state.isRoll, 
+                parent.state.isTemperature, 
+                parent.state.isGnssQual, 
+                parent.state.isGnssHdop, 
+                parent.state.isNumSat, 
+                parent.state.isWaterSpeed, 
+                parent.state.isWaterDir,
+                parent.state.maxEns, 
+                function(error: string, ts_data: ITimeseriesPlotData, more: string) {
               
                 // Check if we need to stop the thread
                 if(parent.state.stopThread) {
@@ -161,132 +206,136 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotDisplay
                     console.error(error);
                 }
                 // Process the good data
-                else if(amp_data) 
+                else if(ts_data) 
                 {          
-                    // Accumulate the plot data based on
-                    // the number of beams
                     var plotData = []
-                    if(amp_data.numBeams > 0) {
-                        var beam0 = {
-                            y: amp_data.binData,
-                            x: amp_data.beam0Data,
+
+                    // Boat Speed Plot
+                    if(parent.state.isBoatSpeed) {
+                        var boatSpeedData = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.boatSpeedData,
                             type: "scatter" as const,
-                            yaxis: 'y2',
-                            name: "Beam 0",
+                            name: "Boat Speed",
                         };
-                        plotData.push(beam0);
+                        plotData.push(boatSpeedData);
                     }
-                    if(amp_data.numBeams > 1) {
-                        var beam1 = {
-                            y: amp_data.binData,
-                            x: amp_data.beam1Data,
+
+                    // Boat Direction Plot
+                    if(parent.state.isBoatDir) {
+                        var boatdirData = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.boatDirData,
                             type: "scatter" as const,
-                            name: "Beam 1",
+                            name: "Boat Direction",
                         };
-                        plotData.push(beam1);
+                        plotData.push(boatdirData);
                     }
-                    if(amp_data.numBeams > 2) {
-                        var beam2 = {
-                            y: amp_data.binData,
-                            x: amp_data.beam2Data,
+
+                    // Heading Plot
+                    if(parent.state.isHeading) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.headingData,
                             type: "scatter" as const,
-                            name: "Beam 2",
+                            name: "Heading",
                         };
-                        plotData.push(beam2);
+                        plotData.push(data);
                     }
-                    if(amp_data.numBeams > 3) {
-                        var beam3 = {
-                            y: amp_data.binData,
-                            x: amp_data.beam3Data,
+
+                    // Pitch Plot
+                    if(parent.state.isPitch) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.pitchData,
                             type: "scatter" as const,
-                            name: "Beam 3",
+                            name: "Pitch",
                         };
-                        plotData.push(beam3);
+                        plotData.push(data);
                     }
-                    
-                    // Set the state for the plot data
+
+                    // Roll Plot
+                    if(parent.state.isRoll) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.rollData,
+                            type: "scatter" as const,
+                            name: "Roll",
+                        };
+                        plotData.push(data);
+                    }
+
+                    // Temperature Plot
+                    if(parent.state.isTemperature) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.temperatureData,
+                            type: "scatter" as const,
+                            name: "Temperature",
+                        };
+                        plotData.push(data);
+                    }
+
+                    // GNSS Quality Indicator Plot
+                    if(parent.state.isGnssQual) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.gnssQualData,
+                            type: "scatter" as const,
+                            name: "GNSS Quality",
+                        };
+                        plotData.push(data);
+                    }
+
+                    // GNSS HDOP Plot
+                    if(parent.state.isGnssHdop) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.gnssHdopData,
+                            type: "scatter" as const,
+                            name: "GNSS HDOP",
+                        };
+                        plotData.push(data);
+                    }                    
+
+                    // GNSS Num of Satellites Plot
+                    if(parent.state.isNumSat) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.numSatData,
+                            type: "scatter" as const,
+                            name: "GNSS Number of Satellites",
+                        };
+                        plotData.push(data);
+                    }      
+
+                    // Water Speed Plot
+                    if(parent.state.isWaterSpeed) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.waterSpeedData,
+                            type: "scatter" as const,
+                            name: "Water Speed",
+                        };
+                        plotData.push(data);
+                    }      
+
+                    // Water Direction Plot
+                    if(parent.state.isWaterDir) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.waterDirData,
+                            type: "scatter" as const,
+                            name: "Water Direction",
+                        };
+                        plotData.push(data);
+                    }      
+
+                    // Set the plot data
                     parent.setState({
-                        data: plotData
+                        data: plotData,
                     });
 
-                    // Check if the layout needs to be created
-                    // Check if the title exist, if it does not, then the layout
-                    // has not be created yet.
-                    // If anything changes in the bin setup, then
-                    // redo the layout.
-                    // Used toFixed() to round the number, because it can vary by a decimal place
-                    if(!parent.state.layout.hasOwnProperty('title') ||
-                        parent.state.minBinDepth.toFixed(1) != amp_data.minBinDepth.toFixed(1) ||
-                        parent.state.maxBinDepth.toFixed(1) != amp_data.maxBinDepth.toFixed(1) ||
-                        parent.state.numBins != amp_data.numBins ||
-                        parent.state.numBeams != amp_data.numBeams)
-                    {
-                        console.log("Create Timeseries Plot Layout");
-                        // Set the layout of the plot
-                        // This sets the axis and 
-                        var layout = {
-                            title: 'Timeseries Data',
-                            yaxis: {
-                                title: 'bin',
-                                side: 'left' as const,
-                                range: [amp_data.numBins, 0]                        // Default to downward looking, start 0 at top
-                            },
-                            yaxis2: {
-                                title: 'Depth [meter]',
-                                side: 'right' as const,                             // Set as opposite of side of other y axis
-                                overlaying: 'y' as const,                           // Know which axis to work with
-                                showgrid: false,
-                                range: [amp_data.maxBinDepth, amp_data.minBinDepth] // Upward looking, start 0 at the top
-                            },
-                            xaxis: {
-                                range: [0, 120],
-                                title: 'Amplitude [dB]',
-                            },
-                            uirevision: 'true',
-                            legend: {
-                                "orientation": "h" as const,
-                              },
-                        };
-
-                        // If upward, then the ADCP is on the seafloor looking upward
-                        // Change the orientation of the plot
-                        if(parent.state.isUpward) 
-                        {
-                            layout = {
-                                title: 'Timeseries Data',
-                                yaxis: {
-                                    title: 'bin',
-                                    side: 'left' as const,
-                                    range: [0, amp_data.numBins]                                // Upward looking, start 0 at the bottom
-                                },
-                                yaxis2: {
-                                    title: 'Depth [meter]',
-                                    side: 'right' as const,
-                                    overlaying: 'y' as const,
-                                    showgrid: false,
-                                    range: [amp_data.minBinDepth, amp_data.maxBinDepth]        // Upward looking, start 0 at the bottom
-                                },
-                                xaxis: {
-                                    range: [120, 0],                
-                                    title: 'Amplitude [dB]',
-                                },
-                                uirevision: 'true',
-                                legend: {
-                                    "orientation": "h" as const,
-                                  },
-                            };
-                        }
-                        
-                        // Set the state with the new layout
-                        // and all the paramters
-                        parent.setState({
-                            layout: layout,
-                            minBinDepth: amp_data.minBinDepth,
-                            maxBinDepth: amp_data.maxBinDepth,
-                            numBins: amp_data.numBins,
-                            numBeams: amp_data.numBeams,
-                        });
-                    }
                 }
 
           });  
@@ -343,13 +392,13 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotDisplay
                 onClose={this.handleSettingsModelClose}
                 >
                     <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-                    Timeseries Settings
+                    Time Series Settings
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            Select the timeseries options.
+                            Select the Time Series options:
                         </DialogContentText>
-                        <TextField label="Bin number" />
+                        <TimeseriesPlotSettings />
                     </DialogContent>
                     <DialogActions>
                     <Button autoFocus onClick={this.handleSettingsModelClose} color="primary">

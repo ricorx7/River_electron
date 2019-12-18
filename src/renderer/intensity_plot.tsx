@@ -52,7 +52,7 @@ interface IIntensityPlotData {
 export class IntensityPlotDisplay extends React.Component<IntensityPlotDisplayProps, IntensityPlotState> {
     static defaultProps = {
         zerorcpPort: 4241,
-        updateRate: 250
+        updateRate: 500
     }
 
     public handleClick = (evt: any) => alert('click')
