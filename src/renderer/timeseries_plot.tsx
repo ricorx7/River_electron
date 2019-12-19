@@ -11,7 +11,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { TextField } from "@material-ui/core";
 var zerorpc = require('zerorpc');
-import TimeseriesPlotSettings from './timeseries_plot_settings';
+import TimeSeriesOptions from './timeseries_plot_settings';
 
 type TimeseriesPlotProps = {
     zerorcpIP: string,
@@ -103,15 +103,15 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
     this.setState(
       {
         maxEns: 20,
-        //isHeading: true,
+        isHeading: true,
         //isPitch: true,
         //isRoll: true,
-        //isTemperature: true,
+        isTemperature: true,
         //isBoatSpeed: true,
         //isBoatDir: true,
-        isGnssQual: true,
-        isGnssHdop: true,
-        isNumSat: true,
+        //isGnssQual: true,
+        //isGnssHdop: true,
+        //isNumSat: true,
         //isWaterSpeed: true,
         //isWaterDir: true,
         data: [],
@@ -180,20 +180,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
      */
     setInterval(function() {
             // Callback function for the zerorpc to talk to the python backend
-            client.invoke("zerorpc_timeseries_plot", 
-                parent.state.isBoatSpeed,
-                parent.state.isBoatDir,
-                parent.state.isHeading, 
-                parent.state.isPitch, 
-                parent.state.isRoll, 
-                parent.state.isTemperature, 
-                parent.state.isGnssQual, 
-                parent.state.isGnssHdop, 
-                parent.state.isNumSat, 
-                parent.state.isWaterSpeed, 
-                parent.state.isWaterDir,
-                parent.state.maxEns, 
-                function(error: string, ts_data: ITimeseriesPlotData, more: string) {
+            client.invoke("zerorpc_timeseries_plot", function(error: string, ts_data: ITimeseriesPlotData, more: string) {
               
                 // Check if we need to stop the thread
                 if(parent.state.stopThread) {
@@ -398,7 +385,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                         <DialogContentText>
                             Select the Time Series options:
                         </DialogContentText>
-                        <TimeseriesPlotSettings />
+                        <TimeSeriesOptions />
                     </DialogContent>
                     <DialogActions>
                     <Button autoFocus onClick={this.handleSettingsModelClose} color="primary">

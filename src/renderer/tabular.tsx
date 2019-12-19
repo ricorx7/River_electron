@@ -86,7 +86,7 @@ interface IEnsembleData {
 export class TabularDisplay extends React.Component<TabularDisplayProps, TabularDisplayState> {
   static defaultProps = {
     zerorcpPort: 4241,                     // Default zerorpc Port
-    updateRate: 250
+    updateRate: 500
   }
 
   /**

@@ -4,34 +4,38 @@ import math
 from collections import deque
 from rti_python.Ensemble.Ensemble import Ensemble
 from rti_python.Ensemble.EarthVelocity import EarthVelocity
-
+from rti_python.Utilities.config import RtiConfig
 
 class TimeSeriesVM:
 
-    def __init__(self):
+    def __init__(self, rti_config: RtiConfig):
 
-        self.max_ens = 20
-        self.is_boat_speed = False
+        # RTI Config
+        self.rti_config = rti_config
+        self.rti_config.init_timeseries_plot_config()
+
+        self.max_ens = self.rti_config.config['TIMESERIES'].getint('MAX_ENS')
+        self.is_boat_speed = self.rti_config.config['TIMESERIES'].getboolean('IS_BOAT_SPEED')
         self.boat_speed = deque([], maxlen=self.max_ens)
-        self.is_boat_dir = False
+        self.is_boat_dir = self.rti_config.config['TIMESERIES'].getboolean('IS_BOAT_DIR')
         self.boat_dir = deque([], maxlen=self.max_ens)
-        self.is_heading = False
+        self.is_heading = self.rti_config.config['TIMESERIES'].getboolean('IS_HEADING')
         self.heading = deque([], maxlen=self.max_ens)
-        self.is_pitch = False
+        self.is_pitch = self.rti_config.config['TIMESERIES'].getboolean('IS_PITCH')
         self.pitch = deque([], maxlen=self.max_ens)
-        self.is_roll = False
+        self.is_roll = self.rti_config.config['TIMESERIES'].getboolean('IS_ROLL')
         self.roll = deque([], maxlen=self.max_ens)
-        self.is_temperature = False
+        self.is_temperature = self.rti_config.config['TIMESERIES'].getboolean('IS_TEMPERATURE')
         self.temperature = deque([], maxlen=self.max_ens)
-        self.is_gnss_qual = False
+        self.is_gnss_qual = self.rti_config.config['TIMESERIES'].getboolean('IS_GNSS_QUAL')
         self.gnss_qual = deque([], maxlen=self.max_ens)
-        self.is_gnss_hdop = False
+        self.is_gnss_hdop = self.rti_config.config['TIMESERIES'].getboolean('IS_GNSS_HDOP')
         self.gnss_hdop = deque([], maxlen=self.max_ens)
-        self.is_num_sats = False
+        self.is_num_sats = self.rti_config.config['TIMESERIES'].getboolean('IS_NUM_SATS')
         self.num_sats = deque([], maxlen=self.max_ens)
-        self.is_water_speed = False
+        self.is_water_speed = self.rti_config.config['TIMESERIES'].getboolean('IS_WATER_SPEED')
         self.water_speed = deque([], maxlen=self.max_ens)
-        self.is_water_dir = False
+        self.is_water_dir = self.rti_config.config['TIMESERIES'].getboolean('IS_WATER_DIR')
         self.water_dir = deque([], maxlen=self.max_ens)
         self.x_dt = deque([], maxlen=self.max_ens)
         self.thread_lock = Lock()
@@ -107,32 +111,55 @@ class TimeSeriesVM:
 
         self.thread_lock.release()
 
-    def get_data(self,
-                 is_boat_speed: bool,
-                 is_boat_dir: bool,
-                 is_heading: bool,
-                 is_pitch: bool,
-                 is_roll: bool,
-                 is_temp: bool,
-                 is_gnss_qual: bool,
-                 is_gnss_hdop: bool,
-                 is_num_sats: bool,
-                 is_water_speed: bool,
-                 is_water_dir: bool,
-                 max_ens: int):
+    def set_options(self,
+                    is_boat_speed: bool,
+                    is_boat_dir: bool,
+                    is_heading: bool,
+                    is_pitch: bool,
+                    is_roll: bool,
+                    is_temp: bool,
+                    is_gnss_qual: bool,
+                    is_gnss_hdop: bool,
+                    is_num_sats: bool,
+                    is_water_speed: bool,
+                    is_water_dir: bool,
+                    max_ens: int):
         """
-        Populate the structure.
-
-        Lock and unlock when getting the data to ensure
-        when new data is received, it is not being used with
-        old data.
-        :return: Structure with all the latest ensemble data
+        Set the options for the Time Series.
+        :param is_boat_speed: Boat Speed on/off
+        :param is_boat_dir: Boat Direciton on/off
+        :param is_heading: Heading on/off
+        :param is_pitch: Pitch on/off
+        :param is_roll: roll on/off
+        :param is_temp: temperature on/off
+        :param is_gnss_qual: GNSS Quality on/off
+        :param is_gnss_hdop: GNSS HDOP on/off
+        :param is_num_sats: Number of Sats on/off
+        :param is_water_speed: Water Speed on/off
+        :param is_water_dir: Water Direction on/off
+        :param max_ens: Maximum ensembles to display
+        :return:
         """
 
         # Lock the object
         self.thread_lock.acquire()
 
-        # Set the flags
+        # Write settings to the config
+        self.rti_config.config['TIMESERIES']['IS_BOAT_SPEED'] = RtiConfig.bool_to_str(is_boat_speed)
+        self.rti_config.config['TIMESERIES']['IS_BOAT_DIR'] = RtiConfig.bool_to_str(is_boat_dir)
+        self.rti_config.config['TIMESERIES']['IS_HEADING'] = RtiConfig.bool_to_str(is_heading)
+        self.rti_config.config['TIMESERIES']['IS_PITCH'] = RtiConfig.bool_to_str(is_pitch)
+        self.rti_config.config['TIMESERIES']['IS_ROLL'] = RtiConfig.bool_to_str(is_roll)
+        self.rti_config.config['TIMESERIES']['IS_TEMPERATURE'] = RtiConfig.bool_to_str(is_temp)
+        self.rti_config.config['TIMESERIES']['IS_GNSS_QUAL'] = RtiConfig.bool_to_str(is_gnss_qual)
+        self.rti_config.config['TIMESERIES']['IS_GNSS_HDOP'] = RtiConfig.bool_to_str(is_gnss_hdop)
+        self.rti_config.config['TIMESERIES']['IS_NUM_SATS'] = RtiConfig.bool_to_str(is_num_sats)
+        self.rti_config.config['TIMESERIES']['IS_WATER_SPEED'] = RtiConfig.bool_to_str(is_water_speed)
+        self.rti_config.config['TIMESERIES']['IS_WATER_DIR'] = RtiConfig.bool_to_str(is_water_dir)
+        self.rti_config.config['TIMESERIES']['MAX_ENS'] = str(max_ens)
+        self.rti_config.write()
+
+        # Set the options
         self.is_boat_speed = is_boat_speed
         self.is_boat_dir = is_boat_dir
         self.is_heading = is_heading
@@ -175,6 +202,58 @@ class TimeSeriesVM:
             self.num_sats = deque(num_sats, maxlen=self.max_ens)
             self.water_speed = deque(water_speed, maxlen=max_ens)
             self.water_dir = deque(water_dir, maxlen=max_ens)
+
+        # Release the lock
+        self.thread_lock.release()
+
+    def get_options(self):
+        """
+        Get the options.  Populate the structure.
+
+        Lock and unlock when getting the data to ensure
+        when new data is received, it is not being used with
+        old data.
+        :return: Structure with all the latest options
+        """
+
+        # Lock the object
+        self.thread_lock.acquire()
+
+        # Populate the structure
+        st_data = {
+            "isBoatSpeed": self.is_boat_speed,
+            "isBoatDir": self.is_boat_dir,
+            "isHeading": self.is_heading,
+            "isPitch": self.is_pitch,
+            "isRoll": self.is_roll,
+            "isTemperature": self.is_temperature,
+            "isGnssQual": self.is_gnss_qual,
+            "isGnssHdop": self.is_gnss_hdop,
+            "isNumSat": self.is_num_sats,
+            "isWaterSpeed": self.is_water_speed,
+            "isWaterDir": self.is_water_dir,
+            "maxEns": self.max_ens,
+        }
+
+        # Release the lock
+        self.thread_lock.release()
+
+        logging.info(st_data)
+
+        return st_data
+
+    def get_data(self):
+        """
+        Get the options and the data.  Populate the structure.
+
+        Lock and unlock when getting the data to ensure
+        when new data is received, it is not being used with
+        old data.
+        :return: Structure with all the latest data
+        """
+
+        # Lock the object
+        self.thread_lock.acquire()
 
         if len(self.x_dt) > 0:
             # Populate the structure
