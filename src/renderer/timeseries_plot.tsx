@@ -16,27 +16,15 @@ import TimeSeriesOptions from './timeseries_plot_settings';
 type TimeseriesPlotProps = {
     zerorcpIP: string,
     zerorcpPort: Number,
-    updateRate: Number
+    updateRate: Number,
 }
 
 /**
  * State of the display
  */
 type TimeseriesPlotState = {
-    isBoatSpeed: boolean;                   // Boat Speed Plot selected
-    isBoatDir: boolean;                   // Boat Direction Plot selected
-    isHeading: boolean;                     // Heading Plot selected
-    isPitch: boolean;                       // Pitch Plot selected
-    isRoll: boolean;                        // Roll Plot selected
-    isTemperature: boolean;                 // Temperature Plot selected
-    isGnssQual: boolean;                    // GNSS Quality Indicator Plot selected
-    isGnssHdop: boolean;                    // GNSS HDOP Plot selected
-    isNumSat: boolean;                      // Number of GNSS satellites Plot selected
-    isWaterSpeed: boolean;                  // Water Speed Plot selected
-    isWaterDir: boolean;                    // Water Direction Plot selected
-    stopThread: Boolean;                    // Flag to stop the timer
-    maxEns: Number;                         // Maximum number of ensembles to plot
-    data: Plotly.Data[]                     // Data to display
+    stopThread: boolean;
+    data: Plotly.Data[];                    // Data to display
     layout: Partial<Plotly.Layout>;         // Layout of the plot
     setSettingsModalOpen: boolean;          // Open or close the modal settings
     modalStyle: any;                        // Modal style
@@ -61,6 +49,7 @@ interface ITimeseriesPlotData {
     isNumSat: boolean;                      // Number of GNSS satellites Plot selected
     isWaterSpeed: boolean;                  // Water Speed Plot selected
     isWaterDir: boolean;                    // Water Direction Plot selected
+    isVtgSpeed: boolean;                    // GPS VTG Speed selected
     boatSpeedData: number[];                // Boat Speed data
     boatDirData: number[];                  // Boat Direction data
     headingData: number[];                  // Heading data
@@ -72,6 +61,7 @@ interface ITimeseriesPlotData {
     numSatData: number[];                   // Number of GNSS satellites data
     waterSpeedData: number[];               // Water Speed data
     waterDirData: number[];                 // Water Direction data
+    vtgSpeedData: number[];                 // GPS VTG Speed data
     X_dt: number[];                         // X Axis - Date Time
     maxEns: Number;                         // Maximum Number of ensembles to plot
   }
@@ -81,6 +71,17 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
         zerorcpIP: "127.0.0.1",
         zerorcpPort: 4241,
         updateRate: 500
+    }
+
+    // Initialize the state
+    state =   
+    {
+        data: [],
+        stopThread: false,
+        setSettingsModalOpen: false,
+        layout: {},
+        modalStyle: null,                        // Modal style
+        config: {},                             // Configuration of plot (Plotly.Config)
     }
 
     public handleClick = (evt: any) => alert('click')
@@ -97,30 +98,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
    * A timer is created to call the python server through zerorpc for the
    * latest data.
    */
-  componentWillMount() {
-
-    // Initialize the state
-    this.setState(
-      {
-        maxEns: 20,
-        isHeading: true,
-        //isPitch: true,
-        //isRoll: true,
-        isTemperature: true,
-        //isBoatSpeed: true,
-        //isBoatDir: true,
-        //isGnssQual: true,
-        //isGnssHdop: true,
-        //isNumSat: true,
-        //isWaterSpeed: true,
-        //isWaterDir: true,
-        data: [],
-        stopThread: false,
-        setSettingsModalOpen: false,
-        layout: {},
-      }
-    );
-
+  componentDidMount() {
 
 
     console.log("Create Time Series Plot Layout");
@@ -198,18 +176,18 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     var plotData = []
 
                     // Boat Speed Plot
-                    if(parent.state.isBoatSpeed) {
+                    if(ts_data.isBoatSpeed) {
                         var boatSpeedData = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.boatSpeedData,
                             type: "scatter" as const,
-                            name: "Boat Speed",
+                            name: "Boat Speed [m/s]",
                         };
                         plotData.push(boatSpeedData);
                     }
 
                     // Boat Direction Plot
-                    if(parent.state.isBoatDir) {
+                    if(ts_data.isBoatDir) {
                         var boatdirData = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.boatDirData,
@@ -220,7 +198,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }
 
                     // Heading Plot
-                    if(parent.state.isHeading) {
+                    if(ts_data.isHeading) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.headingData,
@@ -231,7 +209,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }
 
                     // Pitch Plot
-                    if(parent.state.isPitch) {
+                    if(ts_data.isPitch) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.pitchData,
@@ -242,7 +220,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }
 
                     // Roll Plot
-                    if(parent.state.isRoll) {
+                    if(ts_data.isRoll) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.rollData,
@@ -253,18 +231,18 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }
 
                     // Temperature Plot
-                    if(parent.state.isTemperature) {
+                    if(ts_data.isTemperature) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.temperatureData,
                             type: "scatter" as const,
-                            name: "Temperature",
+                            name: "Temperature [C]",
                         };
                         plotData.push(data);
                     }
 
                     // GNSS Quality Indicator Plot
-                    if(parent.state.isGnssQual) {
+                    if(ts_data.isGnssQual) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.gnssQualData,
@@ -275,7 +253,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }
 
                     // GNSS HDOP Plot
-                    if(parent.state.isGnssHdop) {
+                    if(ts_data.isGnssHdop) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.gnssHdopData,
@@ -286,7 +264,7 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }                    
 
                     // GNSS Num of Satellites Plot
-                    if(parent.state.isNumSat) {
+                    if(ts_data.isNumSat) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.numSatData,
@@ -297,18 +275,18 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     }      
 
                     // Water Speed Plot
-                    if(parent.state.isWaterSpeed) {
+                    if(ts_data.isWaterSpeed) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.waterSpeedData,
                             type: "scatter" as const,
-                            name: "Water Speed",
+                            name: "Water Speed [m/s]",
                         };
                         plotData.push(data);
                     }      
 
                     // Water Direction Plot
-                    if(parent.state.isWaterDir) {
+                    if(ts_data.isWaterDir) {
                         var data = {
                             x: ts_data.X_dt,               // Date Time
                             y: ts_data.waterDirData,
@@ -316,7 +294,18 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                             name: "Water Direction",
                         };
                         plotData.push(data);
-                    }      
+                    }     
+                    
+                    // GPS VTG Speed
+                    if(ts_data.isVtgSpeed) {
+                        var data = {
+                            x: ts_data.X_dt,               // Date Time
+                            y: ts_data.vtgSpeedData,
+                            type: "scatter" as const,
+                            name: "VTG Speed [m/s]",
+                        };
+                        plotData.push(data);
+                    }     
 
                     // Set the plot data
                     parent.setState({
@@ -383,16 +372,13 @@ export class TimeseriesPlotDisplay extends React.Component<TimeseriesPlotProps, 
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            Select the Time Series options:
+                            Select the Time Series Lines:
                         </DialogContentText>
                         <TimeSeriesOptions />
                     </DialogContent>
                     <DialogActions>
                     <Button autoFocus onClick={this.handleSettingsModelClose} color="primary">
-                        Cancel
-                    </Button>
-                    <Button onClick={this.handleSettingsModelSave} color="primary">
-                        Save
+                        Close
                     </Button>
                     </DialogActions>
                 </Dialog>

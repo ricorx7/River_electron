@@ -6,6 +6,7 @@ from rti_python.Ensemble.Ensemble import Ensemble
 from rti_python.Ensemble.EarthVelocity import EarthVelocity
 from rti_python.Utilities.config import RtiConfig
 
+
 class TimeSeriesVM:
 
     def __init__(self, rti_config: RtiConfig):
@@ -37,6 +38,8 @@ class TimeSeriesVM:
         self.water_speed = deque([], maxlen=self.max_ens)
         self.is_water_dir = self.rti_config.config['TIMESERIES'].getboolean('IS_WATER_DIR')
         self.water_dir = deque([], maxlen=self.max_ens)
+        self.is_vtg_speed = self.rti_config.config['TIMESERIES'].getboolean('IS_VTG_SPEED')
+        self.vtg_speed = deque([], maxlen=self.max_ens)
         self.x_dt = deque([], maxlen=self.max_ens)
         self.thread_lock = Lock()
 
@@ -82,10 +85,12 @@ class TimeSeriesVM:
             self.num_sats.append(ens.NmeaData.GPGGA.num_sats)
             self.gnss_qual.append(ens.NmeaData.GPGGA.gps_qual)
             self.gnss_hdop.append(ens.NmeaData.GPGGA.horizontal_dil)
+            self.vtg_speed.append(ens.NmeaData.speed_m_s)
         else:
             self.num_sats.append(None)
             self.gnss_qual.append(None)
             self.gnss_hdop.append(None)
+            self.vtg_speed.append(None)
 
         if ens.IsBottomTrack:
             # Get the EarthVelocity data
@@ -123,6 +128,7 @@ class TimeSeriesVM:
                     is_num_sats: bool,
                     is_water_speed: bool,
                     is_water_dir: bool,
+                    is_vtg_speed: bool,
                     max_ens: int):
         """
         Set the options for the Time Series.
@@ -137,6 +143,7 @@ class TimeSeriesVM:
         :param is_num_sats: Number of Sats on/off
         :param is_water_speed: Water Speed on/off
         :param is_water_dir: Water Direction on/off
+        :param is_vtg_speed: GPS Speed on/off
         :param max_ens: Maximum ensembles to display
         :return:
         """
@@ -156,6 +163,7 @@ class TimeSeriesVM:
         self.rti_config.config['TIMESERIES']['IS_NUM_SATS'] = RtiConfig.bool_to_str(is_num_sats)
         self.rti_config.config['TIMESERIES']['IS_WATER_SPEED'] = RtiConfig.bool_to_str(is_water_speed)
         self.rti_config.config['TIMESERIES']['IS_WATER_DIR'] = RtiConfig.bool_to_str(is_water_dir)
+        self.rti_config.config['TIMESERIES']['IS_VTG_SPEED'] = RtiConfig.bool_to_str(is_vtg_speed)
         self.rti_config.config['TIMESERIES']['MAX_ENS'] = str(max_ens)
         self.rti_config.write()
 
@@ -171,10 +179,11 @@ class TimeSeriesVM:
         self.is_num_sats = is_num_sats
         self.is_water_speed = is_water_speed
         self.is_water_dir = is_water_dir
+        self.is_vtg_speed = is_vtg_speed
 
         # Check if Max Ensembles changed
         # If it changed, then create new deque with new maxlen
-        if self.max_ens != max_ens:
+        if self.max_ens != max_ens and not math.isnan(max_ens):
             self.max_ens = max_ens
 
             # Create a temp of the values
@@ -189,6 +198,7 @@ class TimeSeriesVM:
             num_sats = list(self.num_sats)
             water_speed = list(self.water_speed)
             water_dir = list(self.water_dir)
+            vtg_speed = list(self.vtg_speed)
 
             # Recreate the deque with the new maxlen and original data
             self.boat_speed = deque(boat_speed, maxlen=self.max_ens)
@@ -202,6 +212,7 @@ class TimeSeriesVM:
             self.num_sats = deque(num_sats, maxlen=self.max_ens)
             self.water_speed = deque(water_speed, maxlen=max_ens)
             self.water_dir = deque(water_dir, maxlen=max_ens)
+            self.vtg_speed = deque(vtg_speed, maxlen=max_ens)
 
         # Release the lock
         self.thread_lock.release()
@@ -232,6 +243,7 @@ class TimeSeriesVM:
             "isNumSat": self.is_num_sats,
             "isWaterSpeed": self.is_water_speed,
             "isWaterDir": self.is_water_dir,
+            "isVtgSpeed": self.is_vtg_speed,
             "maxEns": self.max_ens,
         }
 
@@ -280,6 +292,8 @@ class TimeSeriesVM:
                 "waterSpeedData": list(self.water_speed),
                 "isWaterDir": self.is_water_dir,
                 "waterDirData": list(self.water_dir),
+                "isVtgSpeed": self.is_vtg_speed,
+                "vtgSpeed": list(self.vtg_speed),
                 "X_dt": list(self.x_dt),
                 "maxEns": self.max_ens,
             }
@@ -289,7 +303,7 @@ class TimeSeriesVM:
         # Release the lock
         self.thread_lock.release()
 
-        logging.debug(st_data)
+        logging.info(st_data)
 
         return st_data
 
@@ -309,3 +323,4 @@ class TimeSeriesVM:
         self.num_sats.clear()
         self.water_speed.clear()
         self.water_dir.clear()
+        self.vtg_speed.clear()

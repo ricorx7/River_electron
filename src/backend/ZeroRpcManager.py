@@ -122,6 +122,7 @@ class ZeroRpcManager:
                                        is_num_sats: bool,
                                        is_water_speed: bool,
                                        is_water_dir: bool,
+                                       is_vtg_speed: bool,
                                        max_ens: int):
         """
         Set the Time Series Options.
@@ -136,6 +137,7 @@ class ZeroRpcManager:
         :param is_num_sats: Flag if Number of GNSS Sat Plot is selected.
         :param is_water_speed: Flag if Water Speed Plot is selected.
         :param is_water_dir: Flag if Water Direction Plot is selected.
+        :param is_vtg_speed: Flag if VTG Speed is selected.
         :param max_ens: Number of ensembles in time series.
         :return:
         """
@@ -152,6 +154,7 @@ class ZeroRpcManager:
                                                is_num_sats,
                                                is_water_speed,
                                                is_water_dir,
+                                               is_vtg_speed,
                                                max_ens)
 
     def zerorpc_get_timeseries_options(self):

@@ -5,6 +5,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Switch from '@material-ui/core/Switch';
+import TextField from '@material-ui/core/TextField';
 var zerorpc = require('zerorpc');
 
 /**
@@ -31,7 +32,9 @@ type TimeSeriesOptionState = {
     isNumSat: boolean; 
     isWaterSpeed: boolean;
     isWaterDir: boolean;
-    maxEns: boolean;
+    isVtgSpeed: boolean;
+    maxEns: number;
+    maxEnsErrorText: String;
     updateServerOption: boolean;        // Flag to update the options to the server
 }
 
@@ -53,14 +56,40 @@ interface ITimesSeriesOptions {
     isNumSat: boolean; 
     isWaterSpeed: boolean;
     isWaterDir: boolean;
-    maxEns: boolean;
+    isVtgSpeed: boolean;
+    maxEns: number;
 }
 
 export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, TimeSeriesOptionState> {
-  static defaultProps = {
-    zerorcpPort: 4241,                     // Default zerorpc Port
-    updateRate: 500
-  }
+
+    // Initialize the props
+    static defaultProps = 
+    {
+        zerorcpPort: 4241,                     // Default zerorpc Port
+        updateRate: 500
+    }
+
+    // Initialize the state
+    state =   
+    {
+        stopThread: false,
+        isBoatSpeed: true,
+        isBoatDir: false,
+        isHeading: false,
+        isPitch: false,
+        isRoll: false,
+        isTemperature: false,
+        isGnssQual: false,
+        isGnssHdop: false,
+        isNumSat: false,
+        isWaterSpeed: false,
+        isWaterDir: false,
+        isVtgSpeed: false,
+        maxEns: 4096,
+        maxEnsErrorText: '',
+        updateServerOption: false,
+    }
+  
 
   /**
    * Called when the component is first created.  
@@ -71,14 +100,7 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
    * A timer is created to call the python server through zerorpc for the
    * latest data.
    */
-  componentWillMount() {
-
-    // Initialize the state
-    this.setState(
-      {
-        updateServerOption: false,
-      }
-    );
+  componentDidMount() {
 
     // Create the zerorpc connection to the python server
     // Use the port given to create the port
@@ -90,6 +112,35 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
     var parent = this;
 
     console.log("Create Time Series Options");
+
+    // Callback function for the zerorpc to talk to the python backend
+    client.invoke("zerorpc_get_timeseries_options", function(error: string, ts_options: ITimesSeriesOptions, more: string) {
+    
+        // Check for any errors
+        if(error) {
+            console.error(error);
+        }
+        // Process the good data
+        else if(ts_options)
+        {
+            // Set the state of the values
+            parent.setState({
+                isBoatSpeed: ts_options.isBoatSpeed,
+                isBoatDir: ts_options.isBoatDir,
+                isHeading: ts_options.isHeading,
+                isPitch: ts_options.isPitch,
+                isRoll: ts_options.isRoll,
+                isTemperature: ts_options.isTemperature,
+                isGnssQual: ts_options.isGnssQual,
+                isGnssHdop: ts_options.isGnssHdop,
+                isNumSat: ts_options.isNumSat,
+                isWaterSpeed: ts_options.isWaterSpeed,
+                isWaterDir: ts_options.isWaterDir,
+                isVtgSpeed: ts_options.isVtgSpeed,
+                maxEns: ts_options.maxEns,
+            });
+        }
+    });
 
     /** 
      * Update the display with the latest information.
@@ -112,29 +163,6 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
                 return;
               }
 
-              // Check for any errors
-              if(error) {
-                console.error(error);
-              }
-              // Process the good data
-              else if(ts_options)
-              {
-                // Set the state of the values
-                parent.setState({
-                    isBoatSpeed: ts_options.isBoatSpeed,
-                    isBoatDir: ts_options.isBoatDir,
-                    isHeading: ts_options.isHeading,
-                    isPitch: ts_options.isPitch,
-                    isRoll: ts_options.isRoll,
-                    isTemperature: ts_options.isTemperature,
-                    isGnssQual: ts_options.isGnssQual,
-                    isGnssHdop: ts_options.isGnssHdop,
-                    isNumSat: ts_options.isNumSat,
-                    isWaterSpeed: ts_options.isWaterSpeed,
-                    isWaterDir: ts_options.isWaterDir,
-                    maxEns: ts_options.maxEns,
-              });
-
               // Check if we need to update the server with the latest options
               if(parent.state.updateServerOption) {
                   parent.updateOptionsOnServer(client);
@@ -142,7 +170,6 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
                   console.log("Update the server with new options");
                   console.log(parent.state);
               }
-            }
           });  
     }, 
     this.props.updateRate);    // Interval Time
@@ -160,6 +187,7 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
    * Update the server with the latest options.
    */
   updateOptionsOnServer(client: any) {
+
     client.invoke("zerorpc_set_timeseries_options",
         this.state.isBoatSpeed,
         this.state.isBoatDir,
@@ -172,10 +200,12 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
         this.state.isNumSat,
         this.state.isWaterSpeed,
         this.state.isWaterDir,
-        this.state.maxEns, 
+        this.state.isVtgSpeed,
+        this.state.maxEns,
         function(error: string, ts_options: ITimesSeriesOptions, more: string) {
     });
     
+    // Reset the update flag
     this.setState({
         updateServerOption: false,
     })
@@ -213,30 +243,182 @@ export class TimeSeriesOptions extends React.Component<TimeSeriesOptionProps, Ti
      });
   };
 
+  /**
+   * Update the Pitch.
+   */
+  handlePitchChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isPitch: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the Roll.
+   */
+  handleRollChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isRoll: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the Temperature.
+   */
+  handleTemperatureChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isTemperature: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the GNSS Quality.
+   */
+  handleGnssQualChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isGnssQual: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+    /**
+   * Update the GNSS HDOP.
+   */
+  handleGnssHdopChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isGnssHdop: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the Number of Satellites.
+   */
+  handleNumSatChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isNumSat: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the Water Speed.
+   */
+  handleWaterSpeedChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isWaterSpeed: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the Water Direction.
+   */
+  handleWaterDirChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isWaterDir: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  /**
+   * Update the GPS VTG Speed.
+   */
+  handleVtgSpeedChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        isVtgSpeed: event.target.checked,
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+  };
+
+  handleMaxEnsChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ 
+        maxEns: parseInt(event.target.value),
+        updateServerOption: true,                   // Set this option to true to udpate the server on next pass
+     });
+     console.log("Ensemble Max: " + this.state.maxEns.toString());
+    }
 
   render() {
     return <div>
                 <FormControl component="fieldset">
-                <FormLabel component="legend">Assign responsibility</FormLabel>
                 <FormGroup>
-                    <FormControlLabel
-                    control={
-                        <Switch checked={this.state.isBoatSpeed} value="isBoatSpeed" onChange={this.handleBoatSpeedChange()} />}
-                    label="Boat Speed"
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isBoatSpeed} value="isBoatSpeed" onChange={this.handleBoatSpeedChange()} color="primary" /> 
+                        }
+                        label="Boat Speed"
                     />
-                    <FormControlLabel
-                    control={
-                        <Switch checked={this.state.isBoatDir} value="isBoatDir" onChange={this.handleBoatDirChange()}  />}
-                    label="Boat Direction"
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isBoatDir} value="isBoatDir" onChange={this.handleBoatDirChange()}  />
+                        } label="Boat Direction"
                     />
-                    <FormControlLabel
-                    control={
-                        <Switch checked={this.state.isHeading} value="isHeading" onChange={this.handleHeadingChange()} />
-                    }
-                    label="Heading"
+                    
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isHeading} value="isHeading" onChange={this.handleHeadingChange()} />
+                        } label="Heading"
                     />
-                </FormGroup>
-                <FormHelperText>Be careful</FormHelperText>
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isPitch} value="isPitch" onChange={this.handlePitchChange()} />
+                        } label="Pitch"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isRoll} value="isRoll" onChange={this.handleRollChange()} />
+                        } label="Roll"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isTemperature} value="isTemperature" onChange={this.handleTemperatureChange()} />
+                        } label="Temperature"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isGnssQual} value="isGnssQual" onChange={this.handleGnssQualChange()} />
+                        } label="GNSS Quality"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isGnssHdop} value="isGnssHdop" onChange={this.handleGnssHdopChange()} />
+                        } label="GNS HDOP"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isNumSat} value="isNumSat" onChange={this.handleNumSatChange()} />
+                        } label="Number of Satellites"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isWaterSpeed} value="isWaterSpeed" onChange={this.handleWaterSpeedChange()} />
+                        } label="Water Speed"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isWaterDir} value="isWaterDir" onChange={this.handleWaterDirChange()} />
+                        } label="Water Direction"
+                    />
+
+                    <FormControlLabel control={
+                            <Switch checked={this.state.isVtgSpeed} value="isVtgSpeed" onChange={this.handleVtgSpeedChange()} />
+                        } label="VTG Speed"
+                    />
+
+                    <TextField
+                        id="filled-number"
+                        label="Max Ensembles"
+                        type="number"
+                        value={this.state.maxEns}
+                        onChange={this.handleMaxEnsChange()}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        inputProps={{ min: "0", max: "999999", step: "1" }}
+                        />
+
+                    </FormGroup>
                 </FormControl>
             </div>
     }
