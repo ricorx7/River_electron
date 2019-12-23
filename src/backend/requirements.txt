@@ -2,3 +2,4 @@ zerorpc
 pygeodesy
 plotly
 humanize
+h5py
