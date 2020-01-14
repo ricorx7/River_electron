@@ -36,3 +36,5 @@ src/backend/.idea
 src/backend/config.ini
 venv/
 .idea/
+
+package-lock.json
