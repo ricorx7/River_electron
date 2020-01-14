@@ -168,3 +168,19 @@ npm update
 npm install zerorpc
 
 Electron must be version 4.2.12 or less to work with zerorpc
+
+# On OSX Having trouble installing ZeroRPC
+brew install pkgConfig
+brew install zmq
+sudo npm cache clean -f
+sudo npm install -g n
+sudo n 12.13.1
+sudo npm install npm -g
+
+Removing additional Node-gyp module
+sudo npm uninstall node-gyp -g
+sudo npm uninstall node-gyp
+npm install node-gyp
+rm -rf node_modules
+npm install
+./node_modules/.bin/electron-rebuild
