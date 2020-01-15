@@ -1,7 +1,7 @@
 /**
  * Entry point of the Election app.
  */
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import { func } from 'prop-types';
@@ -69,6 +69,124 @@ function createAdcpTerminalWindow(): void {
         adcpTerminalWindow = null;
     })
 }
+
+// Menu Items
+const template = [
+    {
+        label: 'File',
+        submenu: [
+            {
+                label: 'Create Discharge Measurement',
+                accelerator: 'CmdOrCtrl+C'
+                //click() {
+                //    if(mainWindow != null)
+                //    {
+                        // Load the index.html of the app.
+                //        mainWindow.loadURL(
+                        //    url.format({
+                        //        pathname: path.join(__dirname, './index.html#/configure'),
+                        //        protocol: 'file:',
+                        //        slashes: true
+                        //    })
+                //        `file://${path.join(__dirname, './index.html#/configure')}`);
+                        //);
+                //    }
+                //}
+            },
+            {
+                label: 'Add Transect',
+                accelerator: 'CmdOrCtrl+A'
+            },
+            {
+                type: 'separator'
+             },
+            {
+                label: 'Exit', 
+                click() { 
+                    app.quit() 
+                } 
+            }
+        ]
+    },
+    {
+       label: 'Edit',
+       submenu: [
+          {
+             role: 'undo'
+          },
+          {
+             role: 'redo'
+          },
+          {
+             type: 'separator'
+          },
+          {
+             role: 'cut'
+          },
+          {
+             role: 'copy'
+          },
+          {
+             role: 'paste'
+          }
+       ]
+    },
+    
+    {
+       label: 'View',
+       submenu: [
+          {
+             role: 'reload'
+          },
+          {
+             role: 'toggledevtools'
+          },
+          {
+             type: 'separator'
+          },
+          {
+             role: 'resetzoom'
+          },
+          {
+             role: 'zoomin'
+          },
+          {
+             role: 'zoomout'
+          },
+          {
+             type: 'separator'
+          },
+          {
+             role: 'togglefullscreen'
+          }
+       ]
+    },
+    
+    {
+       role: 'window',
+       submenu: [
+          {
+             role: 'minimize'
+          },
+          {
+             role: 'close'
+          }
+       ]
+    },
+    
+    {
+       role: 'help',
+       submenu: [
+          {
+             label: 'Learn More'
+          }
+       ]
+    }
+ ]
+
+const menu = Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu)
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
