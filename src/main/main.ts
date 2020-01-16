@@ -71,7 +71,7 @@ function createAdcpTerminalWindow(): void {
 }
 
 // Menu Items
-const template = [
+const template: Electron.MenuItemConstructorOptions[] = [
     {
         label: 'File',
         submenu: [
